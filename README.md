@@ -62,6 +62,9 @@ Open http://localhost:5173
 
 ## 👨‍💻 Author
 Jeff Joe Antony
+Aksa Anil
+Alen Mathew Siby
+Diya Navas
 
 ## 📜 License
 MIT License
