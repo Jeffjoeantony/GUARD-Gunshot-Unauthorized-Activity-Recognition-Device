@@ -4,13 +4,14 @@ import { Download } from '@mui/icons-material'
 import { Search } from '@mui/icons-material'
 import '../styles/Alertlog.css'
 
-function Alertlog() {
-
-    
+const Alertlog = () => {
   return (
-    <div>
-      
-    </div>
+    <>
+      <h1 className="page-title">Alerts Log</h1>
+      <p className="page-subtitle">
+        Complete history of detected events
+      </p>
+    </>
   )
 }
 

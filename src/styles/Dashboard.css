@@ -157,3 +157,12 @@ body{
 .sidebar-icon{
   color: white;
 }
+
+
+
+@media (max-width: 768px) {
+  .nav-center {
+    display: none;
+  }
+}
+

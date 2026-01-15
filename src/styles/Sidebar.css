@@ -90,3 +90,14 @@
   justify-content: center;
   font-weight: bold;
 }
+
+
+.sidebar {
+  width: 240px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
