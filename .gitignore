@@ -57,3 +57,13 @@ coverage/
 # =========================
 *.tmp
 *.temp
+
+
+#Firebase service key
+firebaseKey.json
+
+# Node modules
+node_modules/
+
+# Environment files
+.env

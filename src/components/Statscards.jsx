@@ -1,4 +1,5 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
+import { getLatestAlert } from "../services/api"
 import '../styles/Statscards.css'
 import { Warning } from '@mui/icons-material'
 import { Devices } from '@mui/icons-material'
