@@ -1,55 +1,53 @@
-import React, {useEffect, useState} from 'react'
+import { useEffect, useState } from "react"
 import { getLatestAlert } from "../services/api"
-import '../styles/Statscards.css'
-import { Warning } from '@mui/icons-material'
-import { Devices } from '@mui/icons-material'
-import { AddAlert } from '@mui/icons-material'
-import { GraphicEq } from '@mui/icons-material'
 
-function Statcards() {
+const Statscards = () => {
+  const [alert, setAlert] = useState(null)
 
-    const stats = [
-        {
-            title: "Total Alerts",
-            value: "8",
-            desc: "All time detections",
-            icon: <Warning />
-        },
-        {
-          title: "Active Devices",
-          value: "1",
-          desc: "Sensor nodes online",
-          icon: <Devices />,
-        },
-        {
-          title: "Alerts Today",
-          value: "1",
-          desc: "Last 24 hours",
-          icon: <AddAlert />,
-        },
-        {
-          title: "Avg Confidence",
-          value: "82.6%",
-          desc: "Detection accuracy",
-          icon: <GraphicEq />,
-        },
-    ]
+  useEffect(() => {
+    getLatestAlert()
+      .then(setAlert)
+      .catch(console.error)
+  }, [])
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return "--"
+    return new Date(timestamp * 1000).toLocaleString()
+  }
 
   return (
-    <div className='stats-grid'>
-        {stats.map((item, index) => (
-        <div className="stat-card" key={index}>
-          <div className="stat-header">
-            <span className="stat-icon">{item.icon}</span>
-            <span className="stat-title">{item.title}</span>
-          </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-          <div className="stat-value">{item.value}</div>
-          <div className="stat-desc">{item.desc}</div>
-        </div>
-      ))}
+      {/* LATEST ALERT CARD */}
+      <div className="bg-white p-6 rounded-xl text-black shadow-md">
+        <h3 className="text-sm text-gray-500 mb-4">
+          Latest Alert
+        </h3>
+
+        {alert ? (
+          <div className="space-y-2">
+            <p className="text-lg font-semibold capitalize">
+              Type: <span className="font-bold">{alert.type}</span>
+            </p>
+
+            <p className="text-md">
+              Confidence:{" "}
+              <span className="font-bold">
+                {(alert.confidence * 100).toFixed(0)}%
+              </span>
+            </p>
+
+            <p className="text-sm text-gray-600">
+              Time: {formatTime(alert.timestamp)}
+            </p>
+          </div>
+        ) : (
+          <p className="text-gray-400">Loading...</p>
+        )}
+      </div>
+
     </div>
   )
 }
 
-export default Statcards
+export default Statscards
