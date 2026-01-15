@@ -160,9 +160,3 @@ body{
 
 
 
-@media (max-width: 768px) {
-  .nav-center {
-    display: none;
-  }
-}
-

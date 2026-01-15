@@ -6,12 +6,18 @@ const DashboardLayout = () => {
   return (
     <>
       <Navbar />
-      <div className="layout">
-        <Sidebar />
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
+      <div className="flex">
+  {/* Sidebar (desktop only) */}
+  <aside className="hidden md:block w-64 shrink-0">
+    <Sidebar />
+  </aside>
+
+  {/* Main content */}
+  <main className="flex-1 overflow-x-hidden">
+    <Outlet />
+  </main>
+</div>
+
     </>
   );
 };
