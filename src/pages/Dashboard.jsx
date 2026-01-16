@@ -4,18 +4,16 @@ import Statscards from '../components/Statscards'
 import Alertlog from './Alertlog'
 
 const Dashboard = () => {
+  return (
+    <div className="main-content">
+  <h1 className="page-title">Dashboard</h1>
+  <p className="page-subtitle">
+    Real-time forest monitoring overview
+  </p>
 
-  return (  
-    <div>
-      <div className="main-content">
-        <h1 className="page-title">Dashboard</h1>
-        <p className="page-subtitle">
-          Real-time forest monitoring overview
-        </p>
-        <Statscards />
-      </div>
+  <Statscards />
+</div>
 
-    </div>
   )
 }
 

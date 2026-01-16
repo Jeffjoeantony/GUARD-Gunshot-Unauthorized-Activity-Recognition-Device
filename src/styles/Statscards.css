@@ -44,16 +44,43 @@
   color: #000000;
 }
 
-
 .main-content {
-  margin-left: 100px;      
-  padding-top: 100px;     
-  /* padding-left: 0px; */
-  /* padding-right: 40px; */
+  width: 110%;
+  padding-top: 100px;
+  /* padding-left: 40px; */
+  padding-right: 40px;
 
   display: flex;
   flex-direction: column;
-  align-items: flex-start;   
+  align-items: flex-start;
 }
 
 
+<<<<<<< Updated upstream
+=======
+/* 
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+} */
+
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card {
+  background: linear-gradient(145deg, #ffffff, #cbcbcb);
+  border-radius: 16px;
+  padding: 32px;
+  color: rgb(0, 0, 0);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  width: 100%; 
+}
+>>>>>>> Stashed changes

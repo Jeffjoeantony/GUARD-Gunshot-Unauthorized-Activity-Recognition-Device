@@ -97,6 +97,7 @@ body{
   padding-top: 100px; 
   color: white;
   text-align: center;
+  
 }
 
 .dashboard-title {
@@ -135,20 +136,20 @@ body{
 }
 
 .page-title {
-  font-size: 38px;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 4px;
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: bold;
 }
 
 .page-subtitle {
-  font-size: 14px;
-  color: #9a9a9a;
-  margin-bottom: 24px;
+  color: #e0e0e0;
+  font-size: 16px;
+  margin-top: 6px;
 }
 
+
 .main-content {
-  margin-left: 240px;     
+  /* margin-left: 240px;      */
   padding-top: 88px;      
   min-height: 100vh;
   display: block;
