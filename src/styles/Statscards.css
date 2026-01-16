@@ -45,8 +45,8 @@
 }
 
 .main-content {
-  width: 110%;
-  padding-top: 100px;
+  width: 140%;
+  padding-top: 160px;
   /* padding-left: 40px; */
   padding-right: 40px;
 
@@ -56,8 +56,6 @@
 }
 
 
-<<<<<<< Updated upstream
-=======
 /* 
 .stats-grid {
   display: grid;
@@ -81,6 +79,6 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-  width: 100%; 
+  width: 100%; /* ✅ IMPORTANT */
 }
->>>>>>> Stashed changes
+

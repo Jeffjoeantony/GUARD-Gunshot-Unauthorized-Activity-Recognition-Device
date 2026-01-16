@@ -6,10 +6,14 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.get("/", (req,res) => {
-    res.send("Backend running")
+// Health check
+app.get("/", (req, res) => {
+  res.send("Backend running")
 })
 
+/**
+ * GET latest alert
+ */
 app.get("/api/latest-alert", async (req, res) => {
   try {
     const snapshot = await db
@@ -19,12 +23,43 @@ app.get("/api/latest-alert", async (req, res) => {
       .get()
 
     if (snapshot.empty) {
-      return res.json({ message: "No alerts yet" })
+      return res.json(null)
     }
 
-    const alert = snapshot.docs[0].data()
-    res.json(alert)
+    res.json(snapshot.docs[0].data())
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
 
+/**
+ * GET alert statistics
+ */
+app.get("/api/alert-stats", async (req, res) => {
+  try {
+    const snapshot = await db.collection("alerts").get()
+
+    const totalAlerts = snapshot.size
+    let alertsToday = 0
+    let confidenceSum = 0
+
+    const now = Date.now() / 1000
+    const last24h = now - 86400
+
+    snapshot.forEach(doc => {
+      const data = doc.data()
+      confidenceSum += data.confidence
+      if (data.timestamp >= last24h) alertsToday++
+    })
+
+    const avgConfidence =
+      totalAlerts === 0 ? 0 : confidenceSum / totalAlerts
+
+    res.json({
+      totalAlerts,
+      alertsToday,
+      avgConfidence,
+    })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -32,5 +67,5 @@ app.get("/api/latest-alert", async (req, res) => {
 
 const PORT = 5000
 app.listen(PORT, () =>
-    console.log(`Backend running on http://localhost:${PORT}`)
+  console.log(`Backend running on http://localhost:${PORT}`)
 )
