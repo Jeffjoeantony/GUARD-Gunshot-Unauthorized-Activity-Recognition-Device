@@ -33,7 +33,7 @@ app.get("/api/latest-alert", async (req, res) => {
 })
 
 /**
- * GET alert statistics
+ * GET 
  */
 app.get("/api/alert-stats", async (req, res) => {
   try {
@@ -64,6 +64,33 @@ app.get("/api/alert-stats", async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
+
+// POST
+
+app.post("/api/alerts", async (req, res) => {
+  try {
+    const { type, confidence, deviceId } = req.body
+
+    if (!type || confidence === undefined) {
+      return res.status(400).json({ error: "Invalid data" })
+    }
+
+    const alert = {
+      type,
+      confidence,
+      deviceId: deviceId || "unknown",
+      timestamp: Math.floor(Date.now() / 1000)
+    }
+
+    await db.collection("alerts").add(alert)
+
+    res.json({ message: "Alert saved", alert })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 
 const PORT = 5000
 app.listen(PORT, () =>
