@@ -1,17 +1,24 @@
-import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 
 const DashboardLayout = () => {
   return (
-    <div style={{ display: "flex" }}>
-      <Sidebar />
+    <>
+      <Navbar />
+      <div className="flex">
+  {/* Sidebar (desktop only) */}
+  <aside className="hidden md:block w-64 shrink-0">
+    <Sidebar />
+  </aside>
 
-      <div style={{ flex: 1 }}>
-        <Navbar />
-        <Outlet />
-      </div>
-    </div>
+  {/* Main content */}
+  <main className="flex-1 overflow-x-hidden">
+    <Outlet />
+  </main>
+</div>
+
+    </>
   );
 };
 

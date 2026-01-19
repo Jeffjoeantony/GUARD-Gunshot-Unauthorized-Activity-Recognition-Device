@@ -10,3 +10,7 @@ firebaseKey.json
 
 # Logs
 *.log
+
+.env
+backend/.env
+**/firebaseKey.json

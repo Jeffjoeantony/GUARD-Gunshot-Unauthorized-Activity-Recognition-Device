@@ -13,7 +13,7 @@ const Alertlog = () => {
   const filteredAlerts = alertData.filter(alert => {
     const matchSearch =
       alert.id.toLowerCase().includes(search.toLowerCase()) ||
-      alert.type.toLowerCase().includes(search.toLowerCase());
+      alert.type.toLowerCase().includes(search.toLowerCase());  
 
     const matchType = type === "All" || alert.type === type;
     const matchStatus = status === "All" || alert.status === status;
@@ -23,7 +23,7 @@ const Alertlog = () => {
   });
 
   return (
-    <div className="alert-page">
+    <div className="alertlog-container">
       <h1>Alerts Log</h1>
       <p className="subtitle">Complete history of detected events</p>
 

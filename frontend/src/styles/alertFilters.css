@@ -53,3 +53,24 @@
   width: 180px;
 }
 
+.filter-box {
+  background: #111;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filter-row input,
+.filter-row select {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+}

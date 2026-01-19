@@ -41,3 +41,25 @@
 }
 
 
+.alert-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.alert-table th,
+.alert-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #222;
+}
+
+.alert-table th {
+  background: #151515;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.alert-table td {
+  color: #ddd;
+}
