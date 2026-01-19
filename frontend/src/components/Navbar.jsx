@@ -6,8 +6,6 @@ import { More } from '@mui/icons-material'
 import { GraphicEq } from '@mui/icons-material'
 import { supabase } from "../services/supabaseClient";
 
-
-
 function Navbar() {
     const navigate = useNavigate()
 

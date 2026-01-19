@@ -5,6 +5,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
+import { VisibilityOff } from "@mui/icons-material";
 
 const Login = () => {
   const [action, setAction] = useState("Login");
@@ -12,9 +13,10 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
-  // 🔐 LOGIN
   const handleLogin = async () => {
     if (!email || !password) {
       alert("Please enter email and password");
@@ -33,7 +35,6 @@ const Login = () => {
     }
   };
 
-  // 🆕 SIGN UP
   const handleSignUp = async () => {
     if (!email || !password || !name) {
       alert("Please fill all fields");
@@ -91,16 +92,26 @@ const Login = () => {
           />
         </div>
 
-        {/* PASSWORD */}
-        <div className="input">
-          <VisibilityIcon className="icon" />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <div className="input password-input">
+  <span
+    className="toggle-password left"
+    onMouseDown={(e) => e.preventDefault()}
+    onClick={() => setShowPassword((prev) => !prev)}
+  >
+    {showPassword ? <VisibilityOff /> : <VisibilityIcon />}
+  </span>
+
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+  />
+</div>
+
+
+
+
 
         {/* FORGOT PASSWORD */}
         {action === "Login" && (

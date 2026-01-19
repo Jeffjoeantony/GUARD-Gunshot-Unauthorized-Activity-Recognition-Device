@@ -78,6 +78,25 @@ body {
     font-size: 17px;
 }
 
+.input-group {
+  position: relative;
+  width: 100%;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #555;
+}
+
+.toggle-password:hover {
+  color: #2ec400;
+}
+
+
 .forgot-password{
     width: 420px;          
     margin: 15px auto 0;
@@ -121,4 +140,49 @@ body {
 .gray{
     background: #eaeaea;
     color: #000000;
+}
+
+
+.password-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* INPUT */
+.password-input input {
+  width: 320px;
+  height: 40px;
+  padding-left: 60px;     /* space for icon */
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 17px;
+  color: #797979;
+  z-index: 1;             /* INPUT ABOVE */
+}
+
+/* ICON */
+.toggle-password.left {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  color: #555;
+  cursor: pointer;
+
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 2;             /* icon above input */
+}
+
+/* HOVER */
+.toggle-password.left:hover {
+  color: rgb(40, 182, 12);
 }
