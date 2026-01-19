@@ -1,0 +1,12 @@
+# Backend dependencies
+node_modules/
+
+# Firebase secrets
+firebaseKey.json
+
+# Env
+.env
+.env.*
+
+# Logs
+*.log

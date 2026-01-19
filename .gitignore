@@ -1,0 +1,16 @@
+# ===== Global =====
+node_modules/
+.env
+.env.*
+*.log
+
+# Firebase / secrets
+**/firebaseKey.json
+**/*.pem
+**/*.key
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
