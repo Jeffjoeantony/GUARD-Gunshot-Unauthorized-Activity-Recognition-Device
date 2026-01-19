@@ -7,7 +7,7 @@ const alertData = [
     time: "13/01/2026 1:36 PM",
     status: "New"
   },
-  {
+  { 
     id: "ALRT_002",
     type: "Chainsaw",
     confidence: 87,

@@ -11,9 +11,6 @@ app.get("/", (req, res) => {
   res.send("Backend running")
 })
 
-/**
- * GET latest alert
- */
 app.get("/api/latest-alert", async (req, res) => {
   try {
     const snapshot = await db
@@ -32,9 +29,6 @@ app.get("/api/latest-alert", async (req, res) => {
   }
 })
 
-/**
- * GET 
- */
 app.get("/api/alert-stats", async (req, res) => {
   try {
     const snapshot = await db.collection("alerts").get()
@@ -64,6 +58,22 @@ app.get("/api/alert-stats", async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
+app.get("/api/alerts", async (req, res) => {
+  try {
+    const snapshot = await db.collection("alerts").get();
+
+    const alerts = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.status(200).json(alerts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch alerts" });
+  }
+});
 
 
 // POST

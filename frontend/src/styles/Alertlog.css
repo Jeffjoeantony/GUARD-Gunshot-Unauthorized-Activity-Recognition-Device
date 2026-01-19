@@ -25,3 +25,35 @@
   color: #aaa;
   margin-bottom: 20px;
 }
+
+.alertlog-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #ffffff;
+}
+
+.alertlog-title {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.alertlog-table-wrapper {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.alertlog-table-wrapper {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 12px;
+  padding: 0;
+  margin-top: 20px;
+}
+
+/* 👇 THIS FIXES FLOODING */
+.alertlog-table-scroll {
+  max-height: 480px;       /* adjust as you like */
+  overflow-y: auto;
+}

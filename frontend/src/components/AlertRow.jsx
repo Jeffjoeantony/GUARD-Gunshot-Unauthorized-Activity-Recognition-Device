@@ -3,15 +3,12 @@ const AlertRow = ({ alert }) => {
     <tr>
       <td>{alert.id}</td>
       <td>{alert.type}</td>
-      <td>{alert.confidence}%</td>
-      <td>{alert.location}</td>
-      <td>{alert.time}</td>
-      <td className={`status ${alert.status.toLowerCase()}`}>
-        {alert.status}
-      </td>
+      <td>{Math.round(alert.confidence * 100)}%</td>
+      <td>{alert.deviceId}</td>
+      <td>{new Date(alert.timestamp * 1000).toLocaleString()}</td>
+      <td className={`status new`}>New</td>
     </tr>
   );
 };
 
 export default AlertRow;
-
