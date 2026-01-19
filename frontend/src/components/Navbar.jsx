@@ -4,11 +4,17 @@ import { Logout } from '@mui/icons-material'
 import { Menu } from '@mui/icons-material'
 import { More } from '@mui/icons-material'
 import { GraphicEq } from '@mui/icons-material'
+import { supabase } from "../services/supabaseClient";
 
 
 
 function Navbar() {
     const navigate = useNavigate()
+
+    const handleLogout = async () => {
+  await supabase.auth.signOut();
+  navigate("/login");
+};
 
     return (
       <nav className='navbar'>
