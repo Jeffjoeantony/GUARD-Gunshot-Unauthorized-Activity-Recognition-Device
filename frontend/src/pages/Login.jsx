@@ -3,21 +3,23 @@ import "../styles/Login.css";
 import EmailIcon from "@mui/icons-material/Email";
 import PersonIcon from "@mui/icons-material/Person";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
-import { VisibilityOff } from "@mui/icons-material";
 
 const Login = () => {
   const [action, setAction] = useState("Login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+const handleSubmit = async (e) => {
+  e.preventDefault(); // 🚫 stop page reload
+
+  if (action === "Login") {
     if (!email || !password) {
       alert("Please enter email and password");
       return;
@@ -30,18 +32,20 @@ const Login = () => {
 
     if (error) {
       alert(error.message);
-    } else {
-      navigate("/dashboard");
+      return;
     }
-  };
 
-  const handleSignUp = async () => {
+    navigate("/dashboard");
+    return; 
+  }
+
+  if (action === "Sign Up") {
     if (!email || !password || !name) {
       alert("Please fill all fields");
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -54,11 +58,21 @@ const Login = () => {
 
     if (error) {
       alert(error.message);
-    } else {
-      alert("Signup successful! Please check your email.");
-      setAction("Login");
+      return;
     }
-  };
+
+    if (data?.user && data.user.identities?.length === 0) {
+      alert("User already exists. Please login instead.");
+      return;
+    }
+
+    alert("Signup successful! Please check your email.");
+    setAction("Login");
+    return;
+  }
+};
+
+
 
   return (
     <div className="container">
@@ -67,8 +81,9 @@ const Login = () => {
         <div className="underline"></div>
       </div>
 
-      <div className="inputs">
-        {/* NAME (Only for Sign Up) */}
+      {/* ✅ FORM ENABLES ENTER KEY */}
+      <form className="inputs" onSubmit={handleSubmit}>
+        {/* NAME (Sign Up only) */}
         {action === "Sign Up" && (
           <div className="input">
             <PersonIcon className="icon" />
@@ -92,27 +107,22 @@ const Login = () => {
         </div>
 
         <div className="input password-input">
-  <span
-    className="toggle-password left"
-    onMouseDown={(e) => e.preventDefault()}
-    onClick={() => setShowPassword((prev) => !prev)}
-  >
-    {showPassword ? <VisibilityOff /> : <VisibilityIcon />}
-  </span>
+          <span
+            className="toggle-password left"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? <VisibilityOff /> : <VisibilityIcon />}
+          </span>
 
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder="Password"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-  />
-</div>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
 
-
-
-
-
-        {/* FORGOT PASSWORD */}
         {action === "Login" && (
           <div className="forgot-password">
             Forgot password? <span>Click here</span>
@@ -120,32 +130,36 @@ const Login = () => {
         )}
 
         <div className="submit-container">
+          {action === "Login" ? (
+            <>
+              <div
+                className="submit gray"
+                onClick={() => setAction("Sign Up")}
+              >
+                Sign Up
+              </div>
 
-  {action === "Login" ? (
-    <>
-      <div className="submit gray" onClick={() => setAction("Sign Up")}>
-        Sign Up
-      </div>
+              {/* ✅ Submit button */}
+              <button type="submit" className="submit">
+                Login
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="submit" className="submit">
+                Sign Up
+              </button>
 
-      <div className="submit" onClick={handleLogin}>
-        Login
-      </div>
-    </>
-  ) : (
-    <>
-      <div className="submit" onClick={handleSignUp}>
-        Sign Up
-      </div>
-
-      <div className="submit gray" onClick={() => setAction("Login")}>
-        Login
-      </div>
-    </>
-  )}
-
-</div>
-
-      </div>
+              <div
+                className="submit gray"
+                onClick={() => setAction("Login")}
+              >
+                Login
+              </div>
+            </>
+          )}
+        </div>
+      </form>
     </div>
   );
 };
