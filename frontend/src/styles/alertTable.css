@@ -1,0 +1,63 @@
+.alert-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.alert-table thead {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.alert-table th {
+  text-align: left;
+  padding: 12px 10px;
+  font-weight: 600;
+  color: #caffc9;
+}
+
+.alert-table td {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.alert-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.status {
+  font-weight: 600;
+}
+
+.status.new {
+  color: #00ff88;
+}
+
+.status.acknowledged {
+  color: #ffcc00;
+}
+
+.status.resolved {
+  color: #aaaaaa;
+}
+
+.alert-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #ffffff;
+}
+
+/* Sticky header */
+.alert-table thead th {
+  position: sticky;
+  top: 0;
+  background: rgba(20, 40, 20, 0.95);
+  z-index: 10;
+  padding: 12px 10px;
+}
+
+/* Row spacing */
+.alert-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}

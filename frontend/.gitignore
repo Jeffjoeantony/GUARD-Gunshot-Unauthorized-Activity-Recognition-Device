@@ -1,0 +1,69 @@
+# =========================
+# Node / npm
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Vite build output
+# =========================
+dist/
+dist-ssr/
+*.local
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Cache
+# =========================
+.cache/
+.eslintcache
+
+# =========================
+# Coverage
+# =========================
+coverage/
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+
+
+#Firebase service key
+firebaseKey.json
+
+# Node modules
+node_modules/
+
+# Environment files
+.env

@@ -1,59 +1,16 @@
-# =========================
-# Node / npm
-# =========================
+# ===== Global =====
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# =========================
-# Vite build output
-# =========================
-dist/
-dist-ssr/
-*.local
-
-# =========================
-# Environment variables
-# =========================
 .env
 .env.*
-!.env.example
-
-# =========================
-# Editor / IDE
-# =========================
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# =========================
-# OS files
-# =========================
-.DS_Store
-Thumbs.db
-
-# =========================
-# Logs
-# =========================
-logs/
 *.log
 
-# =========================
-# Cache
-# =========================
-.cache/
-.eslintcache
+# Firebase / secrets
+**/firebaseKey.json
+**/*.pem
+**/*.key
 
-# =========================
-# Coverage
-# =========================
-coverage/
-
-# =========================
-# Temporary files
-# =========================
-*.tmp
-*.temp
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
