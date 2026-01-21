@@ -81,7 +81,6 @@ const Login = () => {
           </div>
         )}
 
-        {/* EMAIL */}
         <div className="input">
           <EmailIcon className="icon" />
           <input
