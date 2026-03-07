@@ -22,11 +22,11 @@ function Navbar() {
             <span className='logo-text'>GUARD</span>
           </div>  
           <ul className='nav-center'>
-            <li className='nav-items'>Dashboard</li>
-            <li>Map</li>
-            <li>Alerts</li>
-            <li>Settings</li>
-          </ul>   
+            <li className='nav-items' onClick={() => navigate('/dashboard')}>Dashboard</li>
+            <li className='nav-items' onClick={() => navigate('/map')}>Map</li>
+            <li className='nav-items' onClick={() => navigate('/alerts')}>Alerts</li>
+            <li className='nav-items' onClick={() => navigate('/settings')}>Settings</li>
+          </ul>  
           <div className="nav-right">
             <More className='nav-icon'/>
             <Logout className='nav-icon' onClick={() => navigate('/')}/>

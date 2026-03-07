@@ -4,21 +4,26 @@ import { Outlet } from "react-router-dom";
 
 const DashboardLayout = () => {
   return (
-    <>
+    <div className="h-screen flex flex-col">
+
+      {/* Navbar */}
       <Navbar />
-      <div className="flex">
-  {/* Sidebar (desktop only) */}
-  <aside className="hidden md:block w-64 shrink-0">
-    <Sidebar />
-  </aside>
 
-  {/* Main content */}
-  <main className="flex-1 overflow-x-hidden">
-    <Outlet />
-  </main>
-</div>
+      {/* Sidebar + Content */}
+      <div className="flex flex-1 overflow-hidden">
 
-    </>
+        {/* Sidebar */}
+        <aside className="hidden md:block w-64 shrink-0">
+          <Sidebar />
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+
+      </div>
+    </div>
   );
 };
 

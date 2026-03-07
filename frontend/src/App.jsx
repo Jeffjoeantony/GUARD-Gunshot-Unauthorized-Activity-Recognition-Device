@@ -5,6 +5,9 @@ import Dashboard from "./pages/Dashboard";
 import Alertlog from "./pages/Alertlog";
 import AdminDashboard from "./pages/AdminDashboard";
 import DashboardLayout from "./layouts/DashboardLayout";
+import MapPage from "./pages/MapPage";
+import "leaflet/dist/leaflet.css";
+
 
 function App() {
   return (
@@ -20,6 +23,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/alerts" element={<Alertlog />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/map" element={<MapPage />} />
       </Route>
 
       {/* Fallback */}
