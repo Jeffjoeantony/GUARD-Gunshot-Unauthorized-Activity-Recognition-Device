@@ -7,6 +7,7 @@ const AlertRow = ({ alert }) => {
       <td>{alert.deviceId}</td>
       <td>{new Date(alert.timestamp * 1000).toLocaleString()}</td>
       <td className={`status new`}>New</td>
+      <td>{alert.latitude}, {alert.longitude}</td>
     </tr>
   );
 };

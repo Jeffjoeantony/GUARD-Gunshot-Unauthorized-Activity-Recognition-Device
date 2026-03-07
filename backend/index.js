@@ -102,7 +102,6 @@ app.post("/api/alerts", async (req, res) => {
 })
 
 
-const PORT = 5000
-app.listen(PORT, () =>
-  console.log(`Backend running on http://localhost:${PORT}`)
-)
+app.listen(5000, "0.0.0.0", () => {
+  console.log("Backend running on port 5000");
+});

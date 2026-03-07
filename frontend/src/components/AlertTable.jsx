@@ -12,6 +12,7 @@ const AlertTable = ({ alerts }) => (
       <th>Device</th>
       <th>Timestamp</th>
       <th>Status</th>
+      <th>Location</th>
     </tr>
   </thead>
   <tbody>
