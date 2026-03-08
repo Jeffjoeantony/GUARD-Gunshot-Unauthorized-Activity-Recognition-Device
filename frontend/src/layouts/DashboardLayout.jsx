@@ -10,15 +10,15 @@ const DashboardLayout = () => {
       <Navbar />
 
       {/* Sidebar + Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1">
 
         {/* Sidebar */}
         <aside className="hidden md:block w-64 shrink-0">
           <Sidebar />
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto">
+        {/* Main */}
+        <main className="flex-1 h-full overflow-auto">
           <Outlet />
         </main>
 
