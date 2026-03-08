@@ -5,6 +5,11 @@ body{
     background: linear-gradient(rgb(13, 73, 1),rgb(0, 0, 0))
 };
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

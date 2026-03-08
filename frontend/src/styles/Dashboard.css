@@ -32,6 +32,7 @@ body{
   display: flex;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
 }
 
 .logo-circle {
@@ -151,9 +152,10 @@ body{
 
 
 .main-content {
-  padding-top: 88px;      
+  padding-top: 88px;
   min-height: 100vh;
   display: block;
+  
 }
 
 .sidebar-icon{
