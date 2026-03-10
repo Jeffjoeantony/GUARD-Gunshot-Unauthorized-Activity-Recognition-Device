@@ -1,74 +1,90 @@
-const express = require("express")
-const cors = require("cors")
-const db = require("./firebase")
+const express = require("express");
+const cors = require("cors");
+const db = require("./firebase");
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
 
 // Health check
 app.get("/", (req, res) => {
-  res.send("Backend running")
-})
+  res.send("Backend running");
+});
 
+
+// Get latest alert
 app.get("/api/latest-alert", async (req, res) => {
   try {
     const snapshot = await db
       .collection("alerts")
       .orderBy("timestamp", "desc")
       .limit(1)
-      .get()
+      .get();
 
     if (snapshot.empty) {
-      return res.json(null)
+      return res.json(null);
     }
 
-    res.json(snapshot.docs[0].data())
+    res.json(snapshot.docs[0].data());
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message });
   }
-})
+});
 
+
+// Alert statistics
 app.get("/api/alert-stats", async (req, res) => {
   try {
-    const snapshot = await db.collection("alerts").get()
+    const snapshot = await db.collection("alerts").get();
 
-    const totalAlerts = snapshot.size
-    let alertsToday = 0
-    let confidenceSum = 0
+    const totalAlerts = snapshot.size;
+    let alertsToday = 0;
+    let confidenceSum = 0;
 
-    const now = Date.now() / 1000
-    const last24h = now - 86400
+    const now = Date.now() / 1000;
+    const last24h = now - 86400;
 
     snapshot.forEach(doc => {
-      const data = doc.data()
-      confidenceSum += data.confidence
-      if (data.timestamp >= last24h) alertsToday++
-    })
+      const data = doc.data();
+      confidenceSum += data.confidence;
+
+      if (data.timestamp >= last24h) {
+        alertsToday++;
+      }
+    });
 
     const avgConfidence =
-      totalAlerts === 0 ? 0 : confidenceSum / totalAlerts
+      totalAlerts === 0 ? 0 : confidenceSum / totalAlerts;
 
     res.json({
       totalAlerts,
       alertsToday,
-      avgConfidence,
-    })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
+      avgConfidence
+    });
 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Get all alerts
 app.get("/api/alerts", async (req, res) => {
   try {
-    const snapshot = await db.collection("alerts").get();
+    const snapshot = await db
+      .collection("alerts")
+      .orderBy("timestamp", "desc")
+      .get();
 
     const alerts = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    res.status(200).json(alerts);
+    res.json(alerts);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch alerts" });
@@ -76,30 +92,35 @@ app.get("/api/alerts", async (req, res) => {
 });
 
 
-// POST
-
+// Save alert
 app.post("/api/alerts", async (req, res) => {
   try {
-    const { type, confidence, deviceId } = req.body
+    const { type, confidence, deviceId, location } = req.body;
 
     if (!type || confidence === undefined) {
-      return res.status(400).json({ error: "Invalid data" })
+      return res.status(400).json({ error: "Invalid data" });
     }
 
     const alert = {
       type,
       confidence,
-      deviceId: deviceId || "unknown",
+      deviceId: deviceId || "ESP32",
+      location: location || "10.8505,76.2711",
+      status: "Active",
       timestamp: Math.floor(Date.now() / 1000)
-    }
+    };
 
-    await db.collection("alerts").add(alert)
+    await db.collection("alerts").add(alert);
 
-    res.json({ message: "Alert saved", alert })
+    res.json({
+      message: "Alert saved",
+      alert
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message });
   }
-})
+});
 
 
 app.listen(5000, "0.0.0.0", () => {

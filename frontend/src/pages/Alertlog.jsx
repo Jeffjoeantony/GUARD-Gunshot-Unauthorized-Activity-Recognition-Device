@@ -10,7 +10,7 @@ const Alertlog = () => {
  useEffect(() => {
   console.log("Fetching alerts...");
 
-  fetch("http://192.168.29.47:5000/api/alerts")
+  fetch("http://localhost:5000/api/alerts")
     .then(res => {
       console.log("Response:", res);
       return res.json();
