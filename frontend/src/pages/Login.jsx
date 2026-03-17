@@ -17,7 +17,7 @@ const Login = () => {
   const navigate = useNavigate();
 
 const handleSubmit = async (e) => {
-  e.preventDefault(); // 🚫 stop page reload
+  e.preventDefault(); 
 
   if (action === "Login") {
     if (!email || !password) {
@@ -70,8 +70,39 @@ const handleSubmit = async (e) => {
     setAction("Login");
     return;
   }
-};
+}
 
+const [cooldown, setCooldown] = useState(false);
+
+const handleForgotPassword = async () => {
+
+  if (!email) {
+    alert("Enter your email first.");
+    return;
+  }
+
+  if (cooldown) {
+    alert("Please wait before requesting another reset email.");
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: "http://localhost:5173/reset-password"
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Password reset email sent.");
+
+  setCooldown(true);
+
+  setTimeout(() => {
+    setCooldown(false);
+  }, 60000); // 1 minute
+};
 
 
   return (
@@ -81,9 +112,7 @@ const handleSubmit = async (e) => {
         <div className="underline"></div>
       </div>
 
-      {/* ✅ FORM ENABLES ENTER KEY */}
       <form className="inputs" onSubmit={handleSubmit}>
-        {/* NAME (Sign Up only) */}
         {action === "Sign Up" && (
           <div className="input">
             <PersonIcon className="icon" />
@@ -125,7 +154,16 @@ const handleSubmit = async (e) => {
 
         {action === "Login" && (
           <div className="forgot-password">
-            Forgot password? <span>Click here</span>
+            Forgot password? 
+            <span
+  onClick={!cooldown ? handleForgotPassword : undefined}
+  style={{
+    cursor: cooldown ? "not-allowed" : "pointer",
+    color: cooldown ? "gray" : "rgb(40,182,12)"
+  }}
+>
+Click here
+</span>
           </div>
         )}
 
@@ -139,7 +177,6 @@ const handleSubmit = async (e) => {
                 Sign Up
               </div>
 
-              {/* ✅ Submit button */}
               <button type="submit" className="submit">
                 Login
               </button>

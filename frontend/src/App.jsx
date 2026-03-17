@@ -8,18 +8,18 @@ import Alertlog from "./pages/Alertlog";
 import AdminDashboard from "./pages/AdminDashboard";
 import MapPage from "./pages/MapPage";
 import DashboardLayout from "./layouts/DashboardLayout";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
     <Routes>
 
-      {/* Redirect root to login */}
       <Route path="/" element={<Navigate to="/login" />} />
 
-      {/* Login page */}
       <Route path="/login" element={<Login />} />
 
-      {/* Dashboard layout routes */}
+      <Route path="/reset-password" element={<ResetPassword />} />
+
       <Route element={<DashboardLayout />}>
 
         <Route path="/dashboard" element={<Dashboard />} />
@@ -32,7 +32,6 @@ function App() {
 
       </Route>
 
-      {/* Fallback */}
       <Route path="*" element={<h1>404 - Page Not Found</h1>} />
 
     </Routes>

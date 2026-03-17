@@ -8,6 +8,7 @@ import LogoutDialog from "./LogoutDialogue";
 function Navbar() {
   const navigate = useNavigate();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false); // mobile menu state
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -20,7 +21,10 @@ function Navbar() {
         <div className="nav-left">
           <div
             className="sidebar-icon"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => {
+              setMenuOpen(!menuOpen); // toggle mobile menu
+              navigate("/dashboard");
+            }}
           >
             <Menu />
           </div>
@@ -32,7 +36,8 @@ function Navbar() {
           <span className="logo-text">GUARD</span>
         </div>
 
-        <ul className="nav-center">
+        {/* NAV CENTER */}
+        <ul className={`nav-center ${menuOpen ? "active" : ""}`}>
           <li
             className="nav-items"
             onClick={() => navigate("/dashboard")}

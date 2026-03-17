@@ -118,7 +118,28 @@ body {
     margin: 30px auto;
 }
 
+.update-container{
+    display: flex;
+    justify-content: center; 
+    width: 420px;                   
+    margin: 30px auto;
+}
+
 .submit{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(40, 182, 12);
+    width: 190px;
+    height: 55px;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; 
+}
+
+.update{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -185,4 +206,74 @@ body {
 /* HOVER */
 .toggle-password.left:hover {
   color: rgb(40, 182, 12);
+}
+
+
+/* ===== TABLET ===== */
+
+@media (max-width: 768px){
+
+  body{
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .container{
+    width: 90%;
+    max-width: 520px;
+    margin-top: 20px;
+  }
+
+  .input{
+    width: 100%;
+  }
+
+  .input input{
+    width: 100%;
+  }
+
+  .forgot-password{
+    width: 100%;
+  }
+
+  .submit-container{
+    width: 100%;
+  }
+
+}
+
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 480px){
+
+  .container{
+    width: 95%;
+    max-width: 520px;
+  }
+
+  .input{
+    width: 100%;
+    height: 55px;
+  }
+
+  .input input{
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .forgot-password{
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .submit-container{
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .submit{
+    width: 100%;
+  }
+
 }
