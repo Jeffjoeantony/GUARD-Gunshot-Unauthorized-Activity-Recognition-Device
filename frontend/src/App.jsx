@@ -1,7 +1,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 
-
+import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Alertlog from "./pages/Alertlog";
@@ -22,13 +22,20 @@ function App() {
 
       <Route element={<DashboardLayout />}>
 
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/alerts" element={<Alertlog />} />
+        <Route path="/alerts" element={<ProtectedRoute> <Alertlog /> </ProtectedRoute> } />
 
         <Route path="/admin" element={<AdminDashboard />} />
 
-        <Route path="/map" element={<MapPage />} />
+        <Route path="/map" element={<ProtectedRoute> <MapPage /> </ProtectedRoute>} />
 
       </Route>
 
