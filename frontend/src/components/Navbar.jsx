@@ -1,5 +1,5 @@
 import "../styles/Dashboard.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Logout, Menu, More, GraphicEq } from "@mui/icons-material";
 import { supabase } from "../services/supabaseClient";
 import { useState } from "react";
@@ -7,8 +7,11 @@ import LogoutDialog from "./LogoutDialogue";
 
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false); // mobile menu state
+  
+  const isAdminPath = location.pathname.startsWith('/admin');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -23,7 +26,6 @@ function Navbar() {
             className="sidebar-icon"
             onClick={() => {
               setMenuOpen(!menuOpen); // toggle mobile menu
-              navigate("/dashboard");
             }}
           >
             <Menu />
@@ -40,21 +42,21 @@ function Navbar() {
         <ul className={`nav-center ${menuOpen ? "active" : ""}`}>
           <li
             className="nav-items"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(isAdminPath ? "/admin" : "/dashboard")}
           >
             Dashboard
           </li>
 
           <li
             className="nav-items"
-            onClick={() => navigate("/map")}
+            onClick={() => navigate(isAdminPath ? "/admin/map" : "/map")}
           >
             Map
           </li>
 
           <li
             className="nav-items"
-            onClick={() => navigate("/alerts")}
+            onClick={() => navigate(isAdminPath ? "/admin/alerts" : "/alerts")}
           >
             Alerts
           </li>

@@ -190,3 +190,9 @@ body{
   }
 
 }
+
+.admin-subpage-wrapper {
+  padding-top: 90px;
+  min-height: 100vh;
+  width: 100%;
+}

@@ -25,7 +25,7 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -35,7 +35,12 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    navigate("/dashboard");
+    const role = signInData?.user?.user_metadata?.role;
+    if (role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
     return; 
   }
 
@@ -51,7 +56,7 @@ const handleSubmit = async (e) => {
       options: {
         data: {
           name: name,
-          role: "user",
+          role: email.startsWith("admin") ? "admin" : "user",
         },
       },
     });
