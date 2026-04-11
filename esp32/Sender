@@ -1,0 +1,279 @@
+#include "Gunshot_Detection_ESP32_inferencing.h"
+#include "driver/i2s.h"
+#include <SPI.h>
+#include <LoRa.h>
+
+// ======================
+// DEVICE CONFIG
+// ======================
+#define DEVICE_ID "ESP32_NODE_01"
+#define LED_PIN 2
+
+// ======================
+// I2S MIC PINS
+// ======================
+#define I2S_SCK 14
+#define I2S_WS  15
+#define I2S_SD  16
+
+// ======================
+// LORA PINS (ESP32-S3)
+// ======================
+#define SCK   18
+#define MISO  17
+#define MOSI  13
+#define SS    4
+#define RST   12
+#define DIO0  11
+
+#define LORA_FREQUENCY 433E6
+
+// ======================
+// BUFFERS
+// ======================
+static int32_t i2s_raw_buffer[EI_CLASSIFIER_RAW_SAMPLE_COUNT];
+static int16_t audio_buffer[EI_CLASSIFIER_RAW_SAMPLE_COUNT];
+
+// ======================
+// DETECTION PARAMETERS
+// ======================
+#define ENERGY_THRESHOLD 800000
+#define GUNSHOT_THRESHOLD 0.75
+#define ALERT_CONFIDENCE_THRESHOLD 0.90
+#define DETECTION_GAP_MS 3000
+#define ALERT_COOLDOWN_MS 120000
+
+unsigned long last_detection = 0;
+unsigned long last_alert_sent = 0;
+float last_gunshot_score = 0.0;
+
+// ======================
+// SYSTEM TIME (UPTIME)
+// ======================
+String getSystemTime()
+{
+    unsigned long t = millis() / 1000;
+
+    char buf[16];
+
+    sprintf(buf,
+            "%02lu:%02lu:%02lu",
+            t / 3600,
+            (t % 3600) / 60,
+            t % 60);
+
+    return String(buf);
+}
+
+// ======================
+// LORA ALERT FUNCTION
+// ======================
+void sendLoRaAlert(float confidence, long energy)
+{
+    String payload = "{";
+
+    payload += "\"deviceId\":\"" + String(DEVICE_ID) + "\",";
+    payload += "\"type\":\"gunshot\",";
+    payload += "\"confidence\":" + String(confidence, 3) + ",";
+    payload += "\"energy\":" + String(energy) + ",";
+    payload += "\"time\":\"" + getSystemTime() + "\"";
+
+    payload += "}";
+
+    Serial.println("Sending alert:");
+    Serial.println(payload);
+
+    LoRa.beginPacket();
+    LoRa.print(payload);
+    LoRa.endPacket();
+}
+
+// ======================
+// SETUP
+// ======================
+void setup()
+{
+    Serial.begin(115200);
+    delay(2000);
+
+    pinMode(LED_PIN, OUTPUT);
+
+    Serial.println("\n=================================");
+    Serial.println("GUNSHOT DETECTION NODE STARTING");
+    Serial.println("=================================");
+
+    // ---------- I2S CONFIG ----------
+    i2s_config_t cfg =
+    {
+        .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+        .sample_rate = EI_CLASSIFIER_FREQUENCY,
+        .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,
+        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+        .communication_format = I2S_COMM_FORMAT_I2S_MSB,
+        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+        .dma_buf_count = 8,
+        .dma_buf_len = 512,
+        .use_apll = false
+    };
+
+    i2s_pin_config_t pins =
+    {
+        .bck_io_num = I2S_SCK,
+        .ws_io_num = I2S_WS,
+        .data_out_num = I2S_PIN_NO_CHANGE,
+        .data_in_num = I2S_SD
+    };
+
+    i2s_driver_install(I2S_NUM_0, &cfg, 0, NULL);
+    i2s_set_pin(I2S_NUM_0, &pins);
+
+    i2s_set_clk(
+        I2S_NUM_0,
+        EI_CLASSIFIER_FREQUENCY,
+        I2S_BITS_PER_SAMPLE_32BIT,
+        I2S_CHANNEL_MONO
+    );
+
+    Serial.println("Microphone READY");
+
+    // ---------- LORA INIT ----------
+    SPI.begin(SCK, MISO, MOSI, SS);
+    LoRa.setPins(SS, RST, DIO0);
+
+    Serial.println("Initializing LoRa...");
+
+    if (!LoRa.begin(LORA_FREQUENCY))
+    {
+        Serial.println("LoRa INIT FAILED!");
+        while (1);
+    }
+
+    LoRa.setSpreadingFactor(7);
+    LoRa.setSignalBandwidth(125E3);
+    LoRa.setCodingRate4(5);
+    LoRa.setSyncWord(0x12);
+    LoRa.enableCrc();
+
+    Serial.println("LoRa READY");
+}
+
+// ======================
+// LOOP
+// ======================
+void loop()
+{
+    size_t bytes_read = 0;
+
+    esp_err_t res = i2s_read(
+        I2S_NUM_0,
+        i2s_raw_buffer,
+        sizeof(i2s_raw_buffer),
+        &bytes_read,
+        50 / portTICK_PERIOD_MS
+    );
+
+    if (res != ESP_OK || bytes_read == 0)
+    {
+        yield();
+        return;
+    }
+
+    long energy = 0;
+
+    for (int i = 0; i < EI_CLASSIFIER_RAW_SAMPLE_COUNT; i++)
+    {
+        int32_t s = i2s_raw_buffer[i] >> 8;
+
+        audio_buffer[i] = constrain(s, -32768, 32767);
+
+        energy += abs(audio_buffer[i]);
+    }
+
+    // ======================
+    // ENERGY FILTER
+    // ======================
+    if (energy < ENERGY_THRESHOLD)
+    {
+        Serial.print("Energy LOW: ");
+        Serial.println(energy);
+
+        yield();
+        return;
+    }
+
+    // ======================
+    // CLASSIFIER
+    // ======================
+    signal_t signal;
+
+    signal.total_length = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
+
+    signal.get_data = [](size_t off, size_t len, float *out)
+    {
+        for (size_t i = 0; i < len; i++)
+        {
+            out[i] = audio_buffer[off + i] / 32768.0f;
+        }
+
+        return 0;
+    };
+
+    ei_impulse_result_t result;
+
+    if (run_classifier(&signal, &result, false) != EI_IMPULSE_OK)
+    {
+        Serial.println("Classifier error");
+        yield();
+        return;
+    }
+
+    float gunshot = 0;
+    float background = 0;
+
+    for (size_t i = 0; i < EI_CLASSIFIER_LABEL_COUNT; i++)
+    {
+        if (!strcmp(result.classification[i].label, "gunshot"))
+            gunshot = result.classification[i].value;
+        else
+            background = result.classification[i].value;
+    }
+
+    // ======================
+    // PRINT MODEL OUTPUT
+    // ======================
+    Serial.println("\n---- MODEL OUTPUT ----");
+
+    Serial.print("Background: ");
+    Serial.println(background, 4);
+
+    Serial.print("Gunshot: ");
+    Serial.println(gunshot, 4);
+
+    Serial.print("Energy: ");
+    Serial.println(energy);
+
+    // ======================
+    // ALERT DECISION LOGIC
+    // ======================
+    if (gunshot > GUNSHOT_THRESHOLD &&
+        gunshot >= ALERT_CONFIDENCE_THRESHOLD &&
+        gunshot > last_gunshot_score &&
+        millis() - last_detection > DETECTION_GAP_MS &&
+        millis() - last_alert_sent > ALERT_COOLDOWN_MS)
+    {
+        last_detection = millis();
+        last_alert_sent = millis();
+
+        Serial.println("🔫🔫🔫 GUNSHOT CONFIRMED 🔫🔫🔫");
+
+        digitalWrite(LED_PIN, HIGH);
+        delay(300);
+        digitalWrite(LED_PIN, LOW);
+
+        sendLoRaAlert(gunshot, energy);
+    }
+
+    last_gunshot_score = gunshot;
+
+    yield();
+}
