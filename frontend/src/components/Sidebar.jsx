@@ -5,6 +5,7 @@ import { Map } from '@mui/icons-material'
 import { AddAlert } from '@mui/icons-material'
 import { Analytics } from '@mui/icons-material'
 import { Settings } from '@mui/icons-material'
+import { AdminPanelSettings } from '@mui/icons-material'
 import '../styles/Sidebar.css'
 
 const Sidebar = () => {
@@ -40,6 +41,12 @@ const Sidebar = () => {
               <li>
                   <Settings/>
                   <span>Settings</span>
+              </li>
+            </NavLink>
+            <NavLink to='/admin' className='sidebar-link'>
+              <li>
+                  <AdminPanelSettings/>
+                  <span>Admin</span>
               </li>
             </NavLink>
 

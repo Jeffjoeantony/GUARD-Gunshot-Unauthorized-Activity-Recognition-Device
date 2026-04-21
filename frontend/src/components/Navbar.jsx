@@ -65,6 +65,13 @@ function Navbar() {
           >
             Settings
           </li>
+
+          <li
+            className="nav-items"
+            onClick={() => navigate("/admin")}
+          >
+            Admin
+          </li>
         </ul>
 
         <div className="nav-right">

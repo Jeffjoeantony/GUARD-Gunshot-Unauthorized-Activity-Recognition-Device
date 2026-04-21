@@ -1,15 +1,29 @@
 body{
     margin: 0;
     font-family: 'Calibri';
-    height: 100vh;
+    /* height: 100vh; */
     background: linear-gradient(rgb(13, 73, 1),rgb(0, 0, 0))
 };
 
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
 }
 
+/* Dashboard content area — positioned right of sidebar, below nav */
+.layout-content {
+  position: fixed;
+  top: 70px;       /* navbar height */
+  left: 240px;     /* sidebar width */
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #0b0b0b;
+}
+
+/* light-mode overrides disabled — app uses custom dark theme */
+/*
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -22,3 +36,4 @@ html, body, #root {
     background-color: #f9f9f9;
   }
 }
+*/

@@ -1,0 +1,420 @@
+/* ══════════════════════════════════════════════
+   ADMIN DASHBOARD  –  AdminDashboard.css
+   GUARD project  |  dark theme
+══════════════════════════════════════════════ */
+
+/* ── Page wrapper ───────────────────────────── */
+/* .layout-content handles sidebar offset (left:240px) and navbar offset (top:70px)
+   So this page just needs normal internal padding */
+.adm-page {
+  padding: 30px 32px 60px 32px;
+  min-height: 100%;
+  color: #ffffff;
+  font-family: 'Inter', Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ── Header ─────────────────────────────────── */
+.adm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.adm-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-title-icon {
+  color: #28b60c;
+  font-size: 32px !important;
+}
+
+.adm-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #ffffff 60%, #28b60c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.adm-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #888;
+}
+
+.adm-last-refresh {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #555;
+  margin: 0 0 28px;
+}
+
+/* ── Refresh button ─────────────────────────── */
+.adm-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: 1px solid #28b60c44;
+  background: rgba(40, 182, 12, 0.08);
+  color: #28b60c;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.adm-refresh-btn:hover:not(:disabled) {
+  background: rgba(40, 182, 12, 0.18);
+  transform: translateY(-1px);
+}
+
+.adm-refresh-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* spin animation for refresh icon */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+/* ── Stats cards grid ───────────────────────── */
+.adm-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+/* ── Individual stat card ───────────────────── */
+.adm-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 22px 22px 22px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s;
+  backdrop-filter: blur(6px);
+}
+
+.adm-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* coloured left bar */
+.adm-card-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+  background: var(--accent, #28b60c);
+}
+
+.adm-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent, #28b60c);
+  font-size: 24px !important;
+}
+
+.adm-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-card-label {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.adm-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.adm-card-sub {
+  font-size: 12px;
+  color: #666;
+}
+
+/* ── Charts row ─────────────────────────────── */
+.adm-charts-row,
+.adm-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* ── Panel ──────────────────────────────────── */
+.adm-panel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(6px);
+}
+
+.adm-panel-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0 0 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.adm-no-data {
+  text-align: center;
+  color: #555;
+  font-size: 14px;
+  padding: 30px 0;
+}
+
+/* ── Recent alerts table ────────────────────── */
+.adm-table-wrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 600px;
+}
+
+.adm-table thead tr {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.adm-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.adm-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.18s;
+}
+
+.adm-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.adm-table td {
+  padding: 10px 14px;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+.adm-td-id {
+  color: #666;
+  font-size: 12px;
+}
+
+.adm-type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(40, 182, 12, 0.14);
+  color: #28b60c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* confidence bar */
+.adm-conf-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-conf-bar {
+  height: 6px;
+  border-radius: 3px;
+  min-width: 4px;
+  max-width: 80px;
+  transition: width 0.4s ease;
+}
+
+/* status badges */
+.adm-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-new  { background: rgba(0, 170, 255, 0.15); color: #00aaff; }
+.badge-ok   { background: rgba(40, 182, 12, 0.15); color: #28b60c; }
+.badge-warn { background: rgba(245, 166, 35, 0.15); color: #f5a623; }
+
+/* ── Activity feed ──────────────────────────── */
+.adm-feed {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.adm-feed-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.adm-feed-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #28b60c;
+  flex-shrink: 0;
+  margin-top: 4px;
+  box-shadow: 0 0 6px #28b60c88;
+}
+
+.adm-feed-dot.warn {
+  background: #ff4757;
+  box-shadow: 0 0 6px #ff475788;
+}
+
+.adm-feed-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-feed-text {
+  margin: 0 0 3px;
+  font-size: 13px;
+  color: #ccc;
+  word-break: break-word;
+}
+
+.adm-feed-time {
+  font-size: 11px;
+  color: #555;
+}
+
+/* ── System status ──────────────────────────── */
+.adm-status-section {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.adm-status-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+  margin: 0 0 12px;
+}
+
+.adm-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adm-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #bbb;
+}
+
+.adm-status-row span:last-child {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.adm-status-ok   { color: #28b60c; }
+.adm-status-warn { color: #f5a623; }
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+
+@media (max-width: 1280px) {
+  .adm-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .adm-charts-row,
+  .adm-bottom-row {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-page {
+    margin-left: 240px;
+    padding: 90px 20px 60px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .adm-page {
+    margin-left: 0;
+    padding: 80px 16px 50px 16px;
+  }
+
+  .adm-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-title {
+    font-size: 24px;
+  }
+}
+
