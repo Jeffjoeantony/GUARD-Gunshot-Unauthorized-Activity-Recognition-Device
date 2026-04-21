@@ -5,7 +5,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Alertlog from "./pages/Alertlog";
-import AdminDashboard from "./pages/AdminDashboard";
 import MapPage from "./pages/MapPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ResetPassword from "./pages/ResetPassword";
@@ -33,7 +32,6 @@ function App() {
 
         <Route path="/alerts" element={<ProtectedRoute> <Alertlog /> </ProtectedRoute> } />
 
-        <Route path="/admin" element={<AdminDashboard />} />
 
         <Route path="/map" element={<ProtectedRoute> <MapPage /> </ProtectedRoute>} />
 
