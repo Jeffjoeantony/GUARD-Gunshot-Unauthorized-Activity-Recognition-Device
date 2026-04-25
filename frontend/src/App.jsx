@@ -9,6 +9,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import MapPage from "./pages/MapPage";
 import AdminSetupMFA from "./pages/AdminSetupMFA";
+import AnalyticsPage from "./pages/AnalyticsPage";
+
 
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -50,7 +52,12 @@ function App() {
           path="/map"
           element={<ProtectedRoute><MapPage /></ProtectedRoute>}
         />
+        <Route
+          path="/analytics"
+          element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>}
+        />
       </Route>
+
 
       {/* ── Fallback ───────────────────────────── */}
       <Route path="*" element={<h1>404 - Page Not Found</h1>} />
