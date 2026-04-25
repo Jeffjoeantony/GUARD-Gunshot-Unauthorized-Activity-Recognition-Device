@@ -6,6 +6,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Alertlog from "./pages/Alertlog";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
 import MapPage from "./pages/MapPage";
 import AdminSetupMFA from "./pages/AdminSetupMFA";
 
@@ -30,7 +31,7 @@ function App() {
         <Route path="/admin/alerts" element={<Alertlog />} />
         <Route path="/admin/map" element={<MapPage />} />
         {/* Placeholder pages — replace with real admin pages when built */}
-        <Route path="/admin/users" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Users Management</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
+        <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/devices" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Device Management</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
         <Route path="/admin/settings" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Admin Settings</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
       </Route>

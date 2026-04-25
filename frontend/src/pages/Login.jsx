@@ -3,9 +3,70 @@ import "../styles/Login.css";
 import EmailIcon from "@mui/icons-material/Email";
 import PersonIcon from "@mui/icons-material/Person";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { VisibilityOff } from "@mui/icons-material";
+import { VisibilityOff, Block, HourglassEmpty, ErrorOutline } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
+
+/* ── Status-specific block messages ──────────────────────────── */
+const STATUS_MESSAGES = {
+  inactive: {
+    icon: "⏸️",
+    title: "Account Inactive",
+    body: "Your account has been deactivated. Please contact an administrator to re-enable access.",
+  },
+  banned: {
+    icon: "🚫",
+    title: "Account Banned",
+    body: "Your account has been permanently banned due to a policy violation. Contact support if you believe this is an error.",
+  },
+  suspended: {
+    icon: "⛔",
+    title: "Account Suspended",
+    body: "Your account has been temporarily suspended. Please contact an administrator for more information.",
+  },
+  pending: {
+    icon: "⏳",
+    title: "Account Pending Approval",
+    body: "Your account is awaiting admin approval. You will be notified once access is granted.",
+  },
+};
+
+/* ── Inline error/status banner ──────────────────────────────── */
+const LoginBanner = ({ type = "error", title, body, onClose }) => {
+  const colors = {
+    error:     { bg: "rgba(255,71,87,0.08)",  border: "#ff4757", icon: "❌" },
+    inactive:  { bg: "rgba(180,180,180,0.08)", border: "#888",    icon: "⏸️" },
+    banned:    { bg: "rgba(255,71,87,0.08)",  border: "#ff4757", icon: "🚫" },
+    suspended: { bg: "rgba(245,166,35,0.08)", border: "#f5a623", icon: "⛔" },
+    pending:   { bg: "rgba(0,170,255,0.08)",  border: "#00aaff", icon: "⏳" },
+  };
+  const c = colors[type] || colors.error;
+  return (
+    <div style={{
+      background: c.bg,
+      border: `1px solid ${c.border}`,
+      borderLeft: `4px solid ${c.border}`,
+      borderRadius: 10,
+      padding: "14px 16px",
+      width: 390,
+      boxSizing: "border-box",
+      position: "relative",
+      animation: "fadeSlideIn 0.25s ease",
+    }}>
+      <div style={{ fontWeight: 700, color: "#fff", fontSize: 14, marginBottom: 4 }}>
+        {c.icon}&nbsp; {title}
+      </div>
+      <div style={{ color: "#aaa", fontSize: 12, lineHeight: 1.5 }}>{body}</div>
+      {onClose && (
+        <button onClick={onClose} style={{
+          position: "absolute", top: 10, right: 12,
+          background: "none", border: "none", color: "#666",
+          cursor: "pointer", fontSize: 16, lineHeight: 1,
+        }}>×</button>
+      )}
+    </div>
+  );
+};
 
 const Login = () => {
   const [action, setAction] = useState("Login");
@@ -14,89 +75,115 @@ const Login = () => {
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Admin MFA step — shown inline after credentials verified
+  // Inline error/status state (replaces alert())
+  const [loginError, setLoginError] = useState(null); // { type, title, body }
+
+  // Admin MFA step
   const [mfaStep, setMfaStep]         = useState(false);
   const [totpCode, setTotpCode]       = useState("");
   const [mfaFactorId, setMfaFactorId] = useState(null);
   const [mfaError, setMfaError]       = useState("");
-  const [cooldown, setCooldown]       = useState(false); // forgot-password cooldown
+  const [cooldown, setCooldown]       = useState(false);
 
   const navigate = useNavigate();
 
+  const clearError = () => setLoginError(null);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    clearError();
 
     if (action === "Login") {
-      if (!email || !password) { alert("Please enter email and password"); return; }
+      if (!email || !password) {
+        setLoginError({ type: "error", title: "Missing Fields", body: "Please enter your email and password." });
+        return;
+      }
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { alert(error.message); return; }
 
-      // ── Detect admin role ─────────────────────────────────────────
-      // user_metadata.role is part of the JWT (returned by signInWithPassword)
-      // — no extra DB query, no RLS timing issues.
-      // Falls back to profiles table if metadata isn't set.
+      if (error) {
+        setLoginError({ type: "error", title: "Login Failed", body: error.message });
+        return;
+      }
+
+      /* ── Status check — block non-active users immediately ── */
+      const status = (data.user.user_metadata?.status || "active").toLowerCase();
+      if (status !== "active") {
+        // Sign them back out so no session is preserved
+        await supabase.auth.signOut();
+        const msg = STATUS_MESSAGES[status] || {
+          icon: "⛔",
+          title: "Access Denied",
+          body: `Your account status is "${status}". Please contact an administrator.`,
+        };
+        setLoginError({ type: status, title: msg.title, body: msg.body });
+        return;
+      }
+
+      /* ── Role routing ── */
       let role = data.user.user_metadata?.role;
 
-      if (!role || role === 'user') {
-        // Fallback: check profiles table (covers manual SQL updates)
-        const { data: profile, error: profileErr } = await supabase
+      if (!role || role === "user") {
+        // Fallback: check profiles table
+        const { data: profile } = await supabase
           .from("profiles")
           .select("role")
           .eq("id", data.user.id)
           .maybeSingle();
-        if (profileErr) console.error("Profile fetch error:", profileErr);
         if (profile?.role) role = profile.role;
       }
 
       if (role === "admin") {
-        // Check whether this session is already at AAL2 (MFA already done)
         const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
         if (aal?.currentLevel === "aal2") {
           navigate("/admin/dashboard");
           return;
         }
-
-        // Check if the admin has a verified TOTP factor
         const { data: mfaData } = await supabase.auth.mfa.listFactors();
         const totpFactor = mfaData?.totp?.[0];
-
         if (totpFactor && totpFactor.status === "verified") {
-          // MFA set up — show inline TOTP step
           setMfaFactorId(totpFactor.id);
           setMfaStep(true);
         } else {
-          // First time / no MFA — go straight to admin dashboard
           navigate("/admin/dashboard");
         }
         return;
       }
 
-      // Regular user
       navigate("/dashboard");
       return;
     }
 
     if (action === "Sign Up") {
-      if (!email || !password || !name) { alert("Please fill all fields"); return; }
+      if (!email || !password || !name) {
+        setLoginError({ type: "error", title: "Missing Fields", body: "Please fill in all fields to continue." });
+        return;
+      }
 
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name, role: "user" } },
+        options: { data: { full_name: name, name, role: "user", status: "active" } },
       });
 
-      if (error) { alert(error.message); return; }
-      if (data?.user && data.user.identities?.length === 0) {
-        alert("User already exists. Please login instead.");
+      if (error) {
+        setLoginError({ type: "error", title: "Sign Up Failed", body: error.message });
         return;
       }
-      alert("Signup successful! Please check your email.");
+      if (data?.user && data.user.identities?.length === 0) {
+        setLoginError({ type: "error", title: "Already Registered", body: "An account with this email already exists. Please log in instead." });
+        return;
+      }
+      setLoginError({
+        type: "pending",
+        title: "Check Your Email",
+        body: "Signup successful! Please check your inbox to confirm your email address.",
+      });
       setAction("Login");
     }
   };
 
-  // ── Admin MFA verification ─────────────────────────────────────────
+  /* ── Admin MFA verification ── */
   const handleMfaVerify = async (e) => {
     e.preventDefault();
     setMfaError("");
@@ -116,47 +203,57 @@ const Login = () => {
     navigate("/admin/dashboard");
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setLoginError({ type: "error", title: "Email Required", body: "Enter your email address above first." });
+      return;
+    }
+    if (cooldown) {
+      setLoginError({ type: "pending", title: "Please Wait", body: "A reset email was already sent. Please wait 1 minute before requesting another." });
+      return;
+    }
 
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "http://localhost:5173/reset-password",
+    });
 
-const handleForgotPassword = async () => {
+    if (error) {
+      setLoginError({ type: "error", title: "Reset Failed", body: error.message });
+      return;
+    }
 
-  if (!email) {
-    alert("Enter your email first.");
-    return;
-  }
-
-  if (cooldown) {
-    alert("Please wait before requesting another reset email.");
-    return;
-  }
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: "http://localhost:5173/reset-password"
-  });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  alert("Password reset email sent.");
-
-  setCooldown(true);
-
-  setTimeout(() => {
-    setCooldown(false);
-  }, 60000); // 1 minute
-};
-
+    setLoginError({ type: "pending", title: "Reset Email Sent", body: "Check your inbox for a password reset link." });
+    setCooldown(true);
+    setTimeout(() => setCooldown(false), 60000);
+  };
 
   return (
     <div className="container">
+      <style>{`
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
       <div className="header">
         <div className="text">{mfaStep ? "Admin Verification" : action}</div>
         <div className="underline"></div>
       </div>
 
-      {/* ── Admin MFA step (shown after credentials confirmed) ── */}
+      {/* ── Status / error banner ── */}
+      {loginError && (
+        <div style={{ marginTop: 20 }}>
+          <LoginBanner
+            type={loginError.type}
+            title={loginError.title}
+            body={loginError.body}
+            onClose={clearError}
+          />
+        </div>
+      )}
+
+      {/* ── Admin MFA step ── */}
       {mfaStep ? (
         <form className="inputs" onSubmit={handleMfaVerify}>
           <p style={{ color: "#aaa", fontSize: "13px", textAlign: "center", marginBottom: "12px" }}>
@@ -189,7 +286,7 @@ const handleForgotPassword = async () => {
               <PersonIcon className="icon" />
               <input
                 type="text"
-                placeholder="Name"
+                placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -202,7 +299,7 @@ const handleForgotPassword = async () => {
               type="email"
               placeholder="E-mail"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); clearError(); }}
             />
           </div>
 
@@ -218,7 +315,7 @@ const handleForgotPassword = async () => {
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); clearError(); }}
             />
           </div>
 
@@ -237,13 +334,13 @@ const handleForgotPassword = async () => {
           <div className="submit-container">
             {action === "Login" ? (
               <>
-                <div className="submit gray" onClick={() => setAction("Sign Up")}>Sign Up</div>
+                <div className="submit gray" onClick={() => { setAction("Sign Up"); clearError(); }}>Sign Up</div>
                 <button type="submit" className="submit">Login</button>
               </>
             ) : (
               <>
                 <button type="submit" className="submit">Sign Up</button>
-                <div className="submit gray" onClick={() => setAction("Login")}>Login</div>
+                <div className="submit gray" onClick={() => { setAction("Login"); clearError(); }}>Login</div>
               </>
             )}
           </div>

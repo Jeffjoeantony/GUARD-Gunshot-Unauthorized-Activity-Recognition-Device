@@ -24,8 +24,8 @@ function Navbar() {
           <div
             className="sidebar-icon"
             onClick={() => {
-              setMenuOpen(!menuOpen); // toggle mobile menu
-              navigate("/dashboard");
+              setMenuOpen(!menuOpen);
+              navigate(userRole === 'admin' ? "/admin/dashboard" : "/dashboard");
             }}
           >
             <Menu />
@@ -42,21 +42,21 @@ function Navbar() {
         <ul className={`nav-center ${menuOpen ? "active" : ""}`}>
           <li
             className="nav-items"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(userRole === 'admin' ? "/admin/dashboard" : "/dashboard")}
           >
             Dashboard
           </li>
 
           <li
             className="nav-items"
-            onClick={() => navigate("/map")}
+            onClick={() => navigate(userRole === 'admin' ? "/admin/map" : "/map")}
           >
             Map
           </li>
 
           <li
             className="nav-items"
-            onClick={() => navigate("/alerts")}
+            onClick={() => navigate(userRole === 'admin' ? "/admin/alerts" : "/alerts")}
           >
             Alerts
           </li>
@@ -67,16 +67,6 @@ function Navbar() {
           >
             Settings
           </li>
-
-          {/* Only visible to admin users */}
-          {userRole === 'admin' && (
-            <li
-              className="nav-items"
-              onClick={() => navigate("/admin/dashboard")}
-            >
-              Admin
-            </li>
-          )}
         </ul>
 
         <div className="nav-right">
