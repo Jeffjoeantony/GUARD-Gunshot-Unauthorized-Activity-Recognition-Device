@@ -7,9 +7,10 @@
 /* .layout-content handles sidebar offset (left:240px) and navbar offset (top:70px)
    So this page just needs normal internal padding */
 .adm-page {
-  padding: 30px 32px 60px 32px;
+  padding: 20px 32px 60px 32px;
   min-height: 100%;
   color: #ffffff;
+  background: #0b0b0b;   /* admin page keeps dark background */
   font-family: 'Inter', Arial, sans-serif;
   box-sizing: border-box;
 }
@@ -179,9 +180,10 @@
 .adm-charts-row,
 .adm-bottom-row {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr minmax(280px, 340px);
   gap: 20px;
   margin-bottom: 24px;
+  min-width: 0;
 }
 
 /* ── Panel ──────────────────────────────────── */
@@ -191,6 +193,8 @@
   border-radius: 16px;
   padding: 24px;
   backdrop-filter: blur(6px);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .adm-panel-title {
@@ -391,22 +395,16 @@
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .adm-charts-row,
   .adm-bottom-row {
     grid-template-columns: 1fr;
-  }
-
-  .adm-page {
-    margin-left: 240px;
-    padding: 90px 20px 60px 20px;
   }
 }
 
 @media (max-width: 768px) {
   .adm-page {
-    margin-left: 0;
-    padding: 80px 16px 50px 16px;
+    padding: 16px 12px 50px 12px;
   }
 
   .adm-stats-grid {
@@ -418,3 +416,12 @@
   }
 }
 
+/* Admin badge in sidebar footer */
+.adm-sidebar-badge {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(40, 182, 12, 0.06);
+  border: 1px solid rgba(40, 182, 12, 0.15);
+}

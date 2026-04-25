@@ -1,28 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
+import {AreaChart,Area,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,PieChart,Pie,Cell,Legend,
 } from "recharts";
-import {
-  NotificationsActive,
-  People,
-  DevicesOther,
-  Shield,
-  TrendingUp,
-  AccessTime,
-  CheckCircle,
-  Warning,
-  AdminPanelSettings,
-  Refresh,
+import {NotificationsActive,People,DevicesOther,Shield,TrendingUp,AccessTime,CheckCircle,Warning,AdminPanelSettings,Refresh,
 } from "@mui/icons-material";
 import "../styles/AdminDashboard.css";
 
@@ -86,7 +65,6 @@ const buildTypeData = (alerts) => {
   return Object.entries(map).map(([name, value]) => ({ name, value }));
 };
 
-/* ── Colours ────────────────────────────────────────────────── */
 const DONUT_COLORS = ["#28b60c", "#00aaff", "#f5a623", "#ff4757", "#a55eea"];
 
 /* ── Sub-components ─────────────────────────────────────────── */

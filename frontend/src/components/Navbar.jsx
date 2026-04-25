@@ -4,11 +4,13 @@ import { Logout, Menu, More, GraphicEq } from "@mui/icons-material";
 import { supabase } from "../services/supabaseClient";
 import { useState } from "react";
 import LogoutDialog from "./LogoutDialogue";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
   const navigate = useNavigate();
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false); // mobile menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { userRole } = useAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -66,12 +68,15 @@ function Navbar() {
             Settings
           </li>
 
-          <li
-            className="nav-items"
-            onClick={() => navigate("/admin")}
-          >
-            Admin
-          </li>
+          {/* Only visible to admin users */}
+          {userRole === 'admin' && (
+            <li
+              className="nav-items"
+              onClick={() => navigate("/admin/dashboard")}
+            >
+              Admin
+            </li>
+          )}
         </ul>
 
         <div className="nav-right">

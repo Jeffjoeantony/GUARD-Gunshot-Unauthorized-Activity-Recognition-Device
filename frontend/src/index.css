@@ -19,7 +19,8 @@ html, body, #root {
   bottom: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #0b0b0b;
+  /* No background here — each page sets its own,
+     so Dashboard/Map/Alertlog show the body green gradient */
 }
 
 /* light-mode overrides disabled — app uses custom dark theme */
