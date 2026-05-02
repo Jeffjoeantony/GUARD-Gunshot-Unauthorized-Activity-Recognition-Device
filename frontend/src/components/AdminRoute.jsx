@@ -32,7 +32,8 @@ export default function AdminRoute({ children }) {
           if (aal?.currentLevel !== "aal2") { setStatus("denied"); return; }
         }
       } catch {
-        // MFA check failed non-critically — allow access (role already verified)
+        setStatus("denied");
+        return;
       }
 
       setStatus("authorized");
