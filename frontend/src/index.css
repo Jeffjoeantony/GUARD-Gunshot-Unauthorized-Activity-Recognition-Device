@@ -1,40 +1,45 @@
-body{
-    margin: 0;
-    font-family: 'Calibri';
-    /* height: 100vh; */
-    background: linear-gradient(rgb(13, 73, 1),rgb(0, 0, 0))
-};
+body {
+  margin: 0;
+  font-family: 'Calibri';
+  background: linear-gradient(rgb(13, 73, 1), rgb(0, 0, 0));
+}
 
 html, body, #root {
   min-height: 100%;
   margin: 0;
 }
 
-/* Dashboard content area — positioned right of sidebar, below nav */
 .layout-content {
   position: fixed;
-  top: 70px;       /* navbar height */
-  left: 240px;     /* sidebar width */
+  top: 70px;
+  left: 240px;
   right: 0;
   bottom: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  /* No background here — each page sets its own,
-     so Dashboard/Map/Alertlog show the body green gradient */
+  transition: left 0.3s ease;
 }
 
-/* light-mode overrides disabled — app uses custom dark theme */
-/*
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Sidebar collapsed — content fills full width */
+.layout-content.sidebar-collapsed {
+  left: 0;
+}
+
+/* Mobile overlay when sidebar is open */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 900;
+}
+
+@media (max-width: 768px) {
+  .layout-content {
+    left: 0;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+
+  .sidebar-overlay.visible {
+    display: block;
   }
 }
-*/
