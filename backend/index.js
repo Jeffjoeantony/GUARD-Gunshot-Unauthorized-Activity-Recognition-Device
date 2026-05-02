@@ -6,7 +6,6 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-// Explicit CORS — allow Authorization header (required for password PATCH + any future auth routes)
 const corsOptions = {
   origin: "*",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -14,7 +13,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Manually handle CORS preflight for all routes (app.options wildcard breaks on Express 5 + path-to-regexp v8)
+// Manual OPTIONS handler — app.options wildcard breaks on Express 5 + path-to-regexp v8
 app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -27,15 +26,12 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-
-/* ── Supabase Admin Client (service role — server-side only) ── */
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-/* ── Admin auth middleware ── */
 const requireAdmin = async (req, res, next) => {
   const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
   if (!token) return res.status(401).json({ error: "Unauthorized: no token provided" });
@@ -50,7 +46,6 @@ const requireAdmin = async (req, res, next) => {
   next();
 };
 
-/* ── Utility: map Supabase auth user → our shape ── */
 const mapUser = (u) => ({
   id:          u.id,
   email:       u.email,
@@ -62,18 +57,10 @@ const mapUser = (u) => ({
   last_active: u.last_sign_in_at,
 });
 
-
-// Health check
 app.get("/", (req, res) => {
   res.send("Backend running");
 });
 
-
-/* ══════════════════════════════════════════════
-   SUPABASE ADMIN — USER MANAGEMENT ROUTES
-══════════════════════════════════════════════ */
-
-// GET all auth users
 app.get("/api/admin/users", requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
@@ -84,7 +71,6 @@ app.get("/api/admin/users", requireAdmin, async (req, res) => {
   }
 });
 
-// POST create a new auth user
 app.post("/api/admin/users", requireAdmin, async (req, res) => {
   try {
     const { email, password, full_name, username, role, status } = req.body;
@@ -93,7 +79,7 @@ app.post("/api/admin/users", requireAdmin, async (req, res) => {
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,          // auto-confirm so they can log in immediately
+      email_confirm: true,
       user_metadata: {
         full_name: full_name || email.split("@")[0],
         username:  username  || null,
@@ -108,19 +94,15 @@ app.post("/api/admin/users", requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH update a user's metadata — deep-merges so no fields are lost
 app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { full_name, username, role, status } = req.body;
 
-    // 1. Fetch current user to read existing metadata
     const { data: existing, error: fetchErr } = await supabaseAdmin.auth.admin.getUserById(id);
     if (fetchErr) throw fetchErr;
 
     const currentMeta = existing.user?.user_metadata || {};
-
-    // 2. Merge — only overwrite fields that were explicitly passed
     const merged = {
       ...currentMeta,
       ...(full_name !== undefined && { full_name }),
@@ -139,8 +121,6 @@ app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
   }
 });
 
-
-// DELETE a user
 app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -152,27 +132,11 @@ app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
   }
 });
 
-
-/* ══════════════════════════════════════════════
-   SELF-SERVICE USER ROUTES
-   (authenticated user acting on their own data)
-══════════════════════════════════════════════ */
-
-/**
- * PATCH /api/user/password
- * Allows a logged-in user to change their own password.
- * Validates the caller's access token first, then uses the
- * service-role client to update — avoids client-side session issues.
- *
- * Body:  { password: string }
- * Header: Authorization: Bearer <access_token>
- */
 app.patch("/api/user/password", async (req, res) => {
   try {
     const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
     if (!token) return res.status(401).json({ error: "No authorization token provided." });
 
-    // 1. Verify the token belongs to a real user
     const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token);
     if (authErr || !user) return res.status(401).json({ error: "Invalid or expired session. Please log in again." });
 
@@ -180,7 +144,6 @@ app.patch("/api/user/password", async (req, res) => {
     if (!password || password.length < 8)
       return res.status(400).json({ error: "Password must be at least 8 characters." });
 
-    // 2. Use admin client to set the new password
     const { error } = await supabaseAdmin.auth.admin.updateUserById(user.id, { password });
     if (error) throw error;
 
@@ -190,12 +153,6 @@ app.patch("/api/user/password", async (req, res) => {
   }
 });
 
-
-/* ══════════════════════════════════════════════
-   FIREBASE — ALERTS ROUTES (unchanged)
-══════════════════════════════════════════════ */
-
-// Get latest alert
 app.get("/api/latest-alert", async (req, res) => {
   try {
     const snapshot = await db
@@ -211,7 +168,6 @@ app.get("/api/latest-alert", async (req, res) => {
   }
 });
 
-// Alert statistics
 app.get("/api/alert-stats", async (req, res) => {
   try {
     const snapshot = await db.collection("alerts").get();
@@ -235,7 +191,6 @@ app.get("/api/alert-stats", async (req, res) => {
   }
 });
 
-// Get all alerts
 app.get("/api/alerts", async (req, res) => {
   try {
     const snapshot = await db.collection("alerts").orderBy("timestamp", "desc").get();
@@ -247,7 +202,6 @@ app.get("/api/alerts", async (req, res) => {
   }
 });
 
-// Save alert
 app.post("/api/alerts", async (req, res) => {
   try {
     const { type, confidence, deviceId, location } = req.body;
@@ -267,7 +221,6 @@ app.post("/api/alerts", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 app.listen(5000, "0.0.0.0", () => {
   console.log("Backend running on port 5000");

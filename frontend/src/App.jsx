@@ -11,64 +11,39 @@ import MapPage from "./pages/MapPage";
 import AdminSetupMFA from "./pages/AdminSetupMFA";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
-
-
-
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
 function App() {
   return (
     <Routes>
-
-      {/* ── Public routes ───────────────────────── */}
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* ── Admin auth routes (standalone, NO sidebar/navbar) ── */}
-      <Route path="/admin/setup-mfa" element={<AdminSetupMFA />} />
+      <Route
+        path="/admin/setup-mfa"
+        element={<ProtectedRoute><AdminSetupMFA /></ProtectedRoute>}
+      />
 
-      {/* ── Admin routes (with admin sidebar + navbar, wrapped by AdminRoute) ── */}
-      <Route element={<AdminLayout />}>
+      <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/alerts" element={<Alertlog />} />
         <Route path="/admin/map" element={<MapPage />} />
-        {/* Placeholder pages — replace with real admin pages when built */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/devices" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Device Management</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
         <Route path="/admin/settings" element={<SettingsPage isAdmin />} />
-
       </Route>
 
-      {/* ── Protected app routes (with sidebar + navbar) ── */}
       <Route element={<DashboardLayout />}>
-        <Route
-          path="/dashboard"
-          element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
-        />
-        <Route
-          path="/alerts"
-          element={<ProtectedRoute><Alertlog /></ProtectedRoute>}
-        />
-        <Route
-          path="/map"
-          element={<ProtectedRoute><MapPage /></ProtectedRoute>}
-        />
-        <Route
-          path="/analytics"
-          element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>}
-        />
-        <Route
-          path="/settings"
-          element={<ProtectedRoute><SettingsPage /></ProtectedRoute>}
-        />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/alerts" element={<ProtectedRoute><Alertlog /></ProtectedRoute>} />
+        <Route path="/map" element={<ProtectedRoute><MapPage /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       </Route>
 
-
-      {/* ── Fallback ───────────────────────────── */}
       <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-
     </Routes>
   );
 }

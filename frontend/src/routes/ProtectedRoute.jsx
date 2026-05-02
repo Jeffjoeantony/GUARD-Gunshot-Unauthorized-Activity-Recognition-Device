@@ -7,13 +7,11 @@ const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    // Initial check
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
     });
 
-    // React to logout / token expiry
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
