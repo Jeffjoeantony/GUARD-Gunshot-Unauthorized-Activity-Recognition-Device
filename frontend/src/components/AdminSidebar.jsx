@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Dashboard,
   Map,
@@ -7,11 +7,17 @@ import {
   People,
   DevicesOther,
   Settings,
-  AdminPanelSettings,
 } from '@mui/icons-material'
+import { useAuth } from '../context/AuthContext'
 import '../styles/Sidebar.css'
 
 const AdminSidebar = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Admin';
+  const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
   return (
     <div>
       <div className="sidebar">
@@ -37,10 +43,13 @@ const AdminSidebar = () => {
         </ul>
 
         <div className="sidebar-footer">
-          <div className="adm-sidebar-badge">
-            <AdminPanelSettings style={{ fontSize: 18, color: '#28b60c' }} />
-            <span style={{ fontSize: 12, color: '#888', marginLeft: 6 }}>Admin Panel</span>
-          </div>
+          <button className="sidebar-user-btn" onClick={() => navigate('/admin/settings')}>
+            <div className="sidebar-user-avatar admin-avatar">{initials}</div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{fullName}</span>
+              <span className="sidebar-user-role admin-role">admin</span>
+            </div>
+          </button>
         </div>
       </div>
     </div>
