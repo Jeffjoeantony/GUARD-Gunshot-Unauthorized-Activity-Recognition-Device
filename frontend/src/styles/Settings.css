@@ -1,0 +1,243 @@
+/* ══════════════════════════════════════════════
+   SETTINGS PAGE — Settings.css
+══════════════════════════════════════════════ */
+
+.st-page {
+  padding: 32px 36px 60px;
+  max-width: 700px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+/* ── Page header ──────────────────────────── */
+.st-header { margin-bottom: 32px; }
+
+.st-header h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #fff 50%, #28b60c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.st-header p { margin: 0; font-size: 13px; color: #666; }
+
+/* ── Section card ─────────────────────────── */
+.st-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.st-card:hover { border-color: rgba(40,182,12,0.2); }
+
+.st-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.st-card-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: rgba(40,182,12,0.12);
+  display: flex; align-items: center; justify-content: center;
+  color: #28b60c;
+  flex-shrink: 0;
+}
+
+.st-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ddd;
+}
+
+.st-card-sub {
+  font-size: 12px;
+  color: #555;
+  margin-top: 1px;
+}
+
+/* ── Form ─────────────────────────────────── */
+.st-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.st-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.st-group:last-child { margin-bottom: 0; }
+
+.st-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.st-input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.st-input:focus {
+  border-color: #28b60c;
+  background: rgba(40,182,12,0.05);
+}
+
+.st-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.st-input-readonly {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.05);
+  color: #666;
+  cursor: default;
+}
+
+/* ── Info grid ───────────────────────────── */
+.st-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.st-info-item {
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.st-info-key { font-size: 11px; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+.st-info-val { font-size: 14px; color: #ccc; font-weight: 500; word-break: break-all; }
+
+/* ── Buttons ─────────────────────────────── */
+.st-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.st-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.st-btn-primary {
+  background: #28b60c;
+  color: #fff;
+}
+.st-btn-primary:hover  { background: #1e8a09; }
+.st-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.st-btn-danger {
+  background: rgba(255,71,87,0.12);
+  border: 1px solid rgba(255,71,87,0.3);
+  color: #ff4757;
+}
+.st-btn-danger:hover { background: rgba(255,71,87,0.22); }
+
+.st-btn-outline {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #aaa;
+}
+.st-btn-outline:hover { border-color: #28b60c; color: #28b60c; }
+
+/* ── Alert banner ────────────────────────── */
+.st-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  animation: st-fadein 0.25s ease;
+}
+.st-alert-success { background: rgba(40,182,12,0.1); border: 1px solid #28b60c44; color: #28b60c; }
+.st-alert-error   { background: rgba(255,71,87,0.1); border: 1px solid #ff475744; color: #ff4757; }
+
+@keyframes st-fadein {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Avatar circle ───────────────────────── */
+.st-avatar {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+.st-profile-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.st-profile-name { font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 3px; }
+.st-profile-email { font-size: 13px; color: #666; margin: 0; }
+
+/* ── Danger zone ─────────────────────────── */
+.st-danger-zone {
+  border-color: rgba(255,71,87,0.2);
+}
+.st-danger-zone .st-card-icon {
+  background: rgba(255,71,87,0.12);
+  color: #ff4757;
+}
+
+/* ── Divider ─────────────────────────────── */
+.st-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 16px 0;
+}
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 600px) {
+  .st-page { padding: 20px 14px 50px; }
+  .st-row   { grid-template-columns: 1fr; }
+  .st-info-grid { grid-template-columns: 1fr; }
+}

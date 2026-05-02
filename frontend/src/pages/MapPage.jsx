@@ -15,8 +15,8 @@ export default function MapPage() {
   const position = [9.528885729862886, 76.82345679548087];
 
   return (
-    <div className="p-6 w-full h-full flex justify-center ">
-    <div style={{ height: "80vh", width: "80vw" }}>
+    <div className="p-6 w-full 80vw flex justify-center ">
+    <div style={{ height: "80vh", width: "60vw" }}>
       <MapContainer
         center={position}
         zoom={13}

@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useLocation, Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
+import AdminSidebar from "../components/AdminSidebar";
+import AdminRoute from "../components/AdminRoute";
 
-const DashboardLayout = () => {
+const AdminLayout = () => {
   const location = useLocation();
   const contentRef = useRef(null);
 
@@ -14,14 +15,14 @@ const DashboardLayout = () => {
   }, [location.pathname]);
 
   return (
-    <>
+    <AdminRoute>
       <Navbar />
-      <Sidebar />
+      <AdminSidebar />
       <div ref={contentRef} className="layout-content">
         <Outlet />
       </div>
-    </>
+    </AdminRoute>
   );
 };
 
-export default DashboardLayout;
+export default AdminLayout;

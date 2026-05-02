@@ -4,10 +4,13 @@ import { Logout, Menu, More, GraphicEq } from "@mui/icons-material";
 import { supabase } from "../services/supabaseClient";
 import { useState } from "react";
 import LogoutDialog from "./LogoutDialogue";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
   const navigate = useNavigate();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { userRole } = useAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -17,38 +20,43 @@ function Navbar() {
   return (
     <>
       <nav className="navbar">
-        <div className="nav-left" onClick={() => navigate("/dashboard")}>
-          {/* <div
+        <div className="nav-left">
+          <div
             className="sidebar-icon"
+            onClick={() => {
+              setMenuOpen(!menuOpen);
+              navigate(userRole === 'admin' ? "/admin/dashboard" : "/dashboard");
+            }}
           >
             <Menu />
-          </div> */}
+          </div>
 
           <div className="new-logo">
             <GraphicEq />
           </div>
 
           <span className="logo-text">GUARD</span>
-        </div>  
+        </div>
 
-        <ul className="nav-center">
+        {/* NAV CENTER */}
+        <ul className={`nav-center ${menuOpen ? "active" : ""}`}>
           <li
             className="nav-items"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(userRole === 'admin' ? "/admin/dashboard" : "/dashboard")}
           >
             Dashboard
           </li>
 
           <li
             className="nav-items"
-            onClick={() => navigate("/map")}
+            onClick={() => navigate(userRole === 'admin' ? "/admin/map" : "/map")}
           >
             Map
           </li>
 
           <li
             className="nav-items"
-            onClick={() => navigate("/alerts")}
+            onClick={() => navigate(userRole === 'admin' ? "/admin/alerts" : "/alerts")}
           >
             Alerts
           </li>

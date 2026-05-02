@@ -1,15 +1,157 @@
-const express = require("express")
-const cors = require("cors")
-const db = require("./firebase")
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const db = require("./firebase");
+const { createClient } = require("@supabase/supabase-js");
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+const app = express();
 
-// Health check
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
+
+// Manual OPTIONS handler — app.options wildcard breaks on Express 5 + path-to-regexp v8
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+    return res.sendStatus(204);
+  }
+  next();
+});
+
+app.use(express.json());
+
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
+
+const requireAdmin = async (req, res, next) => {
+  const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
+  if (!token) return res.status(401).json({ error: "Unauthorized: no token provided" });
+
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !user) return res.status(401).json({ error: "Unauthorized: invalid or expired token" });
+
+  const role = user.user_metadata?.role;
+  if (role !== "admin") return res.status(403).json({ error: "Forbidden: admin access required" });
+
+  req.adminUser = user;
+  next();
+};
+
+const mapUser = (u) => ({
+  id:          u.id,
+  email:       u.email,
+  full_name:   u.user_metadata?.full_name  || u.user_metadata?.name || u.email?.split("@")[0] || "—",
+  username:    u.user_metadata?.username   || null,
+  role:        u.user_metadata?.role       || "user",
+  status:      u.user_metadata?.status     || (u.banned_until ? "banned" : "active"),
+  created_at:  u.created_at,
+  last_active: u.last_sign_in_at,
+});
+
 app.get("/", (req, res) => {
-  res.send("Backend running")
-})
+  res.send("Backend running");
+});
+
+app.get("/api/admin/users", requireAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+    if (error) throw error;
+    res.json(data.users.map(mapUser));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/admin/users", requireAdmin, async (req, res) => {
+  try {
+    const { email, password, full_name, username, role, status } = req.body;
+    if (!email || !password) return res.status(400).json({ error: "email and password required" });
+
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: full_name || email.split("@")[0],
+        username:  username  || null,
+        role:      role      || "user",
+        status:    status    || "active",
+      },
+    });
+    if (error) throw error;
+    res.json(mapUser(data.user));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { full_name, username, role, status } = req.body;
+
+    const { data: existing, error: fetchErr } = await supabaseAdmin.auth.admin.getUserById(id);
+    if (fetchErr) throw fetchErr;
+
+    const currentMeta = existing.user?.user_metadata || {};
+    const merged = {
+      ...currentMeta,
+      ...(full_name !== undefined && { full_name }),
+      ...(username  !== undefined && { username }),
+      ...(role      !== undefined && { role }),
+      ...(status    !== undefined && { status }),
+    };
+
+    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(id, {
+      user_metadata: merged,
+    });
+    if (error) throw error;
+    res.json(mapUser(data.user));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch("/api/user/password", async (req, res) => {
+  try {
+    const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
+    if (!token) return res.status(401).json({ error: "No authorization token provided." });
+
+    const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token);
+    if (authErr || !user) return res.status(401).json({ error: "Invalid or expired session. Please log in again." });
+
+    const { password } = req.body;
+    if (!password || password.length < 8)
+      return res.status(400).json({ error: "Password must be at least 8 characters." });
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(user.id, { password });
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.get("/api/latest-alert", async (req, res) => {
   try {
@@ -17,92 +159,69 @@ app.get("/api/latest-alert", async (req, res) => {
       .collection("alerts")
       .orderBy("timestamp", "desc")
       .limit(1)
-      .get()
+      .get();
 
-    if (snapshot.empty) {
-      return res.json(null)
-    }
-
-    res.json(snapshot.docs[0].data())
+    if (snapshot.empty) return res.json(null);
+    res.json(snapshot.docs[0].data());
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message });
   }
-})
+});
 
 app.get("/api/alert-stats", async (req, res) => {
   try {
-    const snapshot = await db.collection("alerts").get()
-
-    const totalAlerts = snapshot.size
-    let alertsToday = 0
-    let confidenceSum = 0
-
-    const now = Date.now() / 1000
-    const last24h = now - 86400
+    const snapshot = await db.collection("alerts").get();
+    const totalAlerts = snapshot.size;
+    let alertsToday = 0, confidenceSum = 0;
+    const last24h = Date.now() / 1000 - 86400;
 
     snapshot.forEach(doc => {
-      const data = doc.data()
-      confidenceSum += data.confidence
-      if (data.timestamp >= last24h) alertsToday++
-    })
-
-    const avgConfidence =
-      totalAlerts === 0 ? 0 : confidenceSum / totalAlerts
+      const data = doc.data();
+      confidenceSum += data.confidence;
+      if (data.timestamp >= last24h) alertsToday++;
+    });
 
     res.json({
       totalAlerts,
       alertsToday,
-      avgConfidence,
-    })
+      avgConfidence: totalAlerts === 0 ? 0 : confidenceSum / totalAlerts,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message });
   }
-})
+});
 
 app.get("/api/alerts", async (req, res) => {
   try {
-    const snapshot = await db.collection("alerts").get();
-
-    const alerts = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    res.status(200).json(alerts);
+    const snapshot = await db.collection("alerts").orderBy("timestamp", "desc").get();
+    const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(alerts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch alerts" });
   }
 });
 
-
-// POST
-
 app.post("/api/alerts", async (req, res) => {
   try {
-    const { type, confidence, deviceId } = req.body
-
-    if (!type || confidence === undefined) {
-      return res.status(400).json({ error: "Invalid data" })
-    }
+    const { type, confidence, deviceId, location } = req.body;
+    if (!type || confidence === undefined) return res.status(400).json({ error: "Invalid data" });
 
     const alert = {
-      type,
-      confidence,
-      deviceId: deviceId || "unknown",
-      timestamp: Math.floor(Date.now() / 1000)
-    }
+      type, confidence,
+      deviceId: deviceId || "ESP32",
+      location: location || "10.8505,76.2711",
+      status: "Active",
+      timestamp: Math.floor(Date.now() / 1000),
+    };
 
-    await db.collection("alerts").add(alert)
-
-    res.json({ message: "Alert saved", alert })
+    await db.collection("alerts").add(alert);
+    res.json({ message: "Alert saved", alert });
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message });
   }
-})
+});
 
-
-const PORT = 5000
-app.listen(PORT, () =>
-  console.log(`Backend running on http://localhost:${PORT}`)
-)
+app.listen(5000, "0.0.0.0", () => {
+  console.log("Backend running on port 5000");
+});

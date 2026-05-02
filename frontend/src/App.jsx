@@ -1,32 +1,48 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Alertlog from "./pages/Alertlog";
 import AdminDashboard from "./pages/AdminDashboard";
-import DashboardLayout from "./layouts/DashboardLayout";
+import AdminUsers from "./pages/AdminUsers";
 import MapPage from "./pages/MapPage";
-import "leaflet/dist/leaflet.css";
-
+import AdminSetupMFA from "./pages/AdminSetupMFA";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import SettingsPage from "./pages/SettingsPage";
+import DashboardLayout from "./layouts/DashboardLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
 function App() {
   return (
     <Routes>
-      {/* Default */}
       <Route path="/" element={<Navigate to="/login" />} />
-
-      {/* Auth */}
       <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* Protected layout */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/alerts" element={<Alertlog />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/map" element={<MapPage />} />
+      <Route
+        path="/admin/setup-mfa"
+        element={<ProtectedRoute><AdminSetupMFA /></ProtectedRoute>}
+      />
+
+      <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/alerts" element={<Alertlog />} />
+        <Route path="/admin/map" element={<MapPage />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/devices" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Device Management</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
+        <Route path="/admin/settings" element={<SettingsPage isAdmin />} />
       </Route>
 
-      {/* Fallback */}
+      <Route element={<DashboardLayout />}>
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/alerts" element={<ProtectedRoute><Alertlog /></ProtectedRoute>} />
+        <Route path="/map" element={<ProtectedRoute><MapPage /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      </Route>
+
       <Route path="*" element={<h1>404 - Page Not Found</h1>} />
     </Routes>
   );
