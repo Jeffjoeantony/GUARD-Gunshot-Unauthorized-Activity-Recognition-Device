@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import AdminRoute from "./components/AdminRoute";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
@@ -10,6 +10,8 @@ import AdminUsers from "./pages/AdminUsers";
 import MapPage from "./pages/MapPage";
 import AdminSetupMFA from "./pages/AdminSetupMFA";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import SettingsPage from "./pages/SettingsPage";
+
 
 
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -35,7 +37,8 @@ function App() {
         {/* Placeholder pages — replace with real admin pages when built */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/devices" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Device Management</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
-        <Route path="/admin/settings" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Admin Settings</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
+        <Route path="/admin/settings" element={<SettingsPage isAdmin />} />
+
       </Route>
 
       {/* ── Protected app routes (with sidebar + navbar) ── */}
@@ -55,6 +58,10 @@ function App() {
         <Route
           path="/analytics"
           element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/settings"
+          element={<ProtectedRoute><SettingsPage /></ProtectedRoute>}
         />
       </Route>
 

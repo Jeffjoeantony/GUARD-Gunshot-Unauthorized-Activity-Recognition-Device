@@ -6,8 +6,27 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-app.use(cors());
+// Explicit CORS — allow Authorization header (required for password PATCH + any future auth routes)
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
+
+// Manually handle CORS preflight for all routes (app.options wildcard breaks on Express 5 + path-to-regexp v8)
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 app.use(express.json());
+
 
 /* ── Supabase Admin Client (service role — server-side only) ── */
 const supabaseAdmin = createClient(
@@ -15,6 +34,21 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
+
+/* ── Admin auth middleware ── */
+const requireAdmin = async (req, res, next) => {
+  const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
+  if (!token) return res.status(401).json({ error: "Unauthorized: no token provided" });
+
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !user) return res.status(401).json({ error: "Unauthorized: invalid or expired token" });
+
+  const role = user.user_metadata?.role;
+  if (role !== "admin") return res.status(403).json({ error: "Forbidden: admin access required" });
+
+  req.adminUser = user;
+  next();
+};
 
 /* ── Utility: map Supabase auth user → our shape ── */
 const mapUser = (u) => ({
@@ -40,7 +74,7 @@ app.get("/", (req, res) => {
 ══════════════════════════════════════════════ */
 
 // GET all auth users
-app.get("/api/admin/users", async (req, res) => {
+app.get("/api/admin/users", requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
     if (error) throw error;
@@ -51,7 +85,7 @@ app.get("/api/admin/users", async (req, res) => {
 });
 
 // POST create a new auth user
-app.post("/api/admin/users", async (req, res) => {
+app.post("/api/admin/users", requireAdmin, async (req, res) => {
   try {
     const { email, password, full_name, username, role, status } = req.body;
     if (!email || !password) return res.status(400).json({ error: "email and password required" });
@@ -75,7 +109,7 @@ app.post("/api/admin/users", async (req, res) => {
 });
 
 // PATCH update a user's metadata — deep-merges so no fields are lost
-app.patch("/api/admin/users/:id", async (req, res) => {
+app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { full_name, username, role, status } = req.body;
@@ -107,11 +141,49 @@ app.patch("/api/admin/users/:id", async (req, res) => {
 
 
 // DELETE a user
-app.delete("/api/admin/users/:id", async (req, res) => {
+app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
     if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+/* ══════════════════════════════════════════════
+   SELF-SERVICE USER ROUTES
+   (authenticated user acting on their own data)
+══════════════════════════════════════════════ */
+
+/**
+ * PATCH /api/user/password
+ * Allows a logged-in user to change their own password.
+ * Validates the caller's access token first, then uses the
+ * service-role client to update — avoids client-side session issues.
+ *
+ * Body:  { password: string }
+ * Header: Authorization: Bearer <access_token>
+ */
+app.patch("/api/user/password", async (req, res) => {
+  try {
+    const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
+    if (!token) return res.status(401).json({ error: "No authorization token provided." });
+
+    // 1. Verify the token belongs to a real user
+    const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token);
+    if (authErr || !user) return res.status(401).json({ error: "Invalid or expired session. Please log in again." });
+
+    const { password } = req.body;
+    if (!password || password.length < 8)
+      return res.status(400).json({ error: "Password must be at least 8 characters." });
+
+    // 2. Use admin client to set the new password
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(user.id, { password });
+    if (error) throw error;
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

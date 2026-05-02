@@ -7,7 +7,7 @@ import "../styles/AdminDashboard.css";
 
 /* ── Mock / API helpers ─────────────────────────────────────── */
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const fetchAlerts = () =>
   fetch(`${API_BASE}/alerts`)

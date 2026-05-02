@@ -5,6 +5,8 @@ import {
   Close, Warning, FilterList, Refresh,
 } from "@mui/icons-material";
 import "../styles/AdminUsers.css";
+import { supabase } from "../services/supabaseClient";
+
 
 
 /* ── Constants ─────────────────────────────────────────────── */
@@ -23,6 +25,13 @@ const AVATAR_COLORS = [
 /* ── API base ───────────────────────────────────────────────── */
 const API = "http://localhost:5000/api/admin";
 
+/* ── Auth header helper ─────────────────────────────────────── */
+const getAuthHeader = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token
+    ? { Authorization: `Bearer ${session.access_token}` }
+    : {};
+};
 
 
 /* ── Utilities ──────────────────────────────────────────────── */
@@ -297,7 +306,8 @@ export default function AdminUsers() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/users`);
+      const authHeader = await getAuthHeader();
+      const res = await fetch(`${API}/users`, { headers: authHeader });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
       setAllUsers(Array.isArray(data) ? data : []);
@@ -379,11 +389,12 @@ export default function AdminUsers() {
 
   /* ── CRUD handlers — real backend calls ── */
   const handleSave = async (form, isEdit) => {
+    const authHeader = await getAuthHeader();
     if (isEdit) {
       // PATCH user metadata
       const res = await fetch(`${API}/users/${form.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeader },
         body: JSON.stringify({
           full_name: form.full_name,
           username:  form.username,
@@ -399,7 +410,7 @@ export default function AdminUsers() {
       // POST create new user
       const res = await fetch(`${API}/users`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeader },
         body: JSON.stringify(form),
       });
       const json = await res.json();
@@ -410,7 +421,8 @@ export default function AdminUsers() {
   };
 
   const handleDelete = async (user) => {
-    const res = await fetch(`${API}/users/${user.id}`, { method: "DELETE" });
+    const authHeader = await getAuthHeader();
+    const res = await fetch(`${API}/users/${user.id}`, { method: "DELETE", headers: authHeader });
     if (!res.ok) {
       const json = await res.json();
       throw new Error(json.error || "Delete failed");
@@ -422,9 +434,10 @@ export default function AdminUsers() {
 
   const handleBulkDelete = async () => {
     const ids = [...selected];
+    const authHeader = await getAuthHeader();
     try {
       await Promise.all(
-        ids.map(id => fetch(`${API}/users/${id}`, { method: "DELETE" }))
+        ids.map(id => fetch(`${API}/users/${id}`, { method: "DELETE", headers: authHeader }))
       );
       setAllUsers(prev => prev.filter(u => !selected.has(u.id)));
       setSelected(new Set());
