@@ -1,96 +1,104 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import "../styles/Login.css";
 
 function ResetPassword() {
-
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [sessionReady, setSessionReady] = useState(false);
+  const [status, setStatus] = useState("verifying"); // "verifying" | "ready" | "invalid"
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  // Restore recovery session from URL
   useEffect(() => {
-
     const restoreSession = async () => {
+      // Only accept a PASSWORD_RECOVERY event — reject any plain logged-in session
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          if (event === "PASSWORD_RECOVERY" && session) {
+            setStatus("ready");
+          }
+        }
+      );
 
-      const { data, error } = await supabase.auth.getSession();
+      // Also try exchanging a code/token from the URL (PKCE flow)
+      const { error } = await supabase.auth.exchangeCodeForSession(
+        window.location.href
+      );
 
       if (error) {
-        console.error(error.message);
+        // No valid recovery token in the URL and no PASSWORD_RECOVERY event
+        setStatus("invalid");
       }
 
-      if (data.session) {
-        setSessionReady(true);
-      } else {
-        // Try to read tokens from URL fragment
-        const { error } = await supabase.auth.exchangeCodeForSession(
-          window.location.href
-        );
-
-        if (!error) {
-          setSessionReady(true);
-        }
-      }
-
+      return () => subscription.unsubscribe();
     };
 
     restoreSession();
-
   }, []);
 
   const handleReset = async () => {
-
     if (!password || !confirmPassword) {
-      alert("Please fill all fields");
+      setMessage("Please fill in both fields.");
       return;
     }
-
-    if (password.length < 6) {
-      alert("Password must be at least 6 characters");
+    if (password.length < 8) {
+      setMessage("Password must be at least 8 characters.");
       return;
     }
-
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      setMessage("Passwords do not match.");
       return;
     }
 
-    const { error } = await supabase.auth.updateUser({
-      password: password
-    });
+    const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      alert(error.message);
+      setMessage(error.message);
     } else {
-      alert("Password updated successfully");
-      window.location.href = "/login";
+      await supabase.auth.signOut();
+      navigate("/login");
     }
-
   };
 
-  if (!sessionReady) {
+  if (status === "verifying") {
     return (
       <div className="container">
         <div className="header">
-          <div className="text">Verifying Reset Link...</div>
+          <div className="text">Verifying Reset Link…</div>
           <div className="underline"></div>
         </div>
       </div>
     );
   }
 
+  if (status === "invalid") {
+    return (
+      <div className="container">
+        <div className="header">
+          <div className="text">Invalid Reset Link</div>
+          <div className="underline"></div>
+        </div>
+        <p style={{ color: "#aaa", textAlign: "center", marginTop: 16, fontSize: 14 }}>
+          This link is invalid or has expired. Please request a new password reset email.
+        </p>
+        <div className="submit-container" style={{ marginTop: 24 }}>
+          <button className="submit" onClick={() => navigate("/login")}>
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-
     <div className="container">
-
       <div className="header">
         <div className="text">Reset Password</div>
         <div className="underline"></div>
       </div>
 
       <div className="inputs">
-
-        {/* New Password */}
         <div className="input">
           <input
             type="password"
@@ -100,7 +108,6 @@ function ResetPassword() {
           />
         </div>
 
-        {/* Confirm Password */}
         <div className="input">
           <input
             type="password"
@@ -110,21 +117,20 @@ function ResetPassword() {
           />
         </div>
 
+        {message && (
+          <p style={{ color: "#f87171", fontSize: 13, textAlign: "center", margin: "4px 0 0" }}>
+            {message}
+          </p>
+        )}
+
         <div className="update-container">
-          <button
-            className="update"
-            onClick={handleReset}
-          >
+          <button className="update" onClick={handleReset}>
             Update Password
           </button>
         </div>
-
       </div>
-
     </div>
-
   );
-
 }
 
 export default ResetPassword;
