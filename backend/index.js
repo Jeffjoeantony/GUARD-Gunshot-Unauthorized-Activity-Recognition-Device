@@ -193,8 +193,12 @@ app.get("/api/alert-stats", async (req, res) => {
 
 app.get("/api/alerts", async (req, res) => {
   try {
-    const snapshot = await db.collection("alerts").orderBy("timestamp", "desc").get();
+    const snapshot = await db.collection("alerts").get();
     const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    // Sort in memory so documents missing a timestamp are not excluded
+    alerts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    
     res.json(alerts);
   } catch (error) {
     console.error(error);
