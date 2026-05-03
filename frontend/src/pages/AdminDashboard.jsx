@@ -19,6 +19,11 @@ const fetchStats = () =>
     .then((r) => r.json())
     .catch(() => ({}));
 
+const fetchDevices = () =>
+  fetch(`${API_BASE}/devices`)
+    .then((r) => r.json())
+    .catch(() => []);
+
 /* ── Utility ────────────────────────────────────────────────── */
 
 const fmtConf = (v) =>
@@ -96,16 +101,18 @@ const Badge = ({ status }) => {
 /* ── Main Component ─────────────────────────────────────────── */
 
 const AdminDashboard = () => {
-  const [alerts, setAlerts] = useState([]);
-  const [stats, setStats] = useState({});
+  const [alerts,  setAlerts]  = useState([]);
+  const [stats,   setStats]   = useState({});
+  const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
   const load = () => {
     setLoading(true);
-    Promise.all([fetchAlerts(), fetchStats()]).then(([al, st]) => {
+    Promise.all([fetchAlerts(), fetchStats(), fetchDevices()]).then(([al, st, dv]) => {
       setAlerts(al);
       setStats(st);
+      setDevices(Array.isArray(dv) ? dv : []);
       setLoading(false);
       setLastRefresh(new Date());
     });
@@ -180,13 +187,9 @@ const AdminDashboard = () => {
         />
         <StatCard
           icon={DevicesOther}
-          label="Active Devices"
-          value={
-            alerts.length
-              ? new Set(alerts.map((a) => a.deviceId).filter(Boolean)).size
-              : "—"
-          }
-          sub="Unique sensors online"
+          label="Registered Devices"
+          value={loading ? "—" : devices.length}
+          sub="IoT nodes in registry"
           accent="#a55eea"
         />
       </div>

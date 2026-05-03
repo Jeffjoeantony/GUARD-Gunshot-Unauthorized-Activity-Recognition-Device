@@ -222,6 +222,76 @@ app.post("/api/alerts", async (req, res) => {
   }
 });
 
+/* ─────────────────────────────────────────────────────────────────
+   DEVICE REGISTRY  –  Firestore `devices` collection
+   Fields: name, deviceId, location, status, addedAt, notes
+──────────────────────────────────────────────────────────────────*/
+
+// GET /api/devices — public, used by user analytics + admin dashboard
+app.get("/api/devices", async (req, res) => {
+  try {
+    const snapshot = await db.collection("devices").orderBy("addedAt", "desc").get();
+    const devices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(devices);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/devices — register a new IoT node (admin only)
+app.post("/api/admin/devices", requireAdmin, async (req, res) => {
+  try {
+    const { name, deviceId, location, status, notes } = req.body;
+    if (!name || !deviceId) return res.status(400).json({ error: "name and deviceId are required" });
+
+    const device = {
+      name:      name.trim(),
+      deviceId:  deviceId.trim(),
+      location:  location  || "",
+      status:    status    || "online",
+      notes:     notes     || "",
+      addedAt:   Math.floor(Date.now() / 1000),
+    };
+
+    const ref = await db.collection("devices").add(device);
+    res.json({ id: ref.id, ...device });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/devices/:id — update a device (admin only)
+app.patch("/api/admin/devices/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, deviceId, location, status, notes } = req.body;
+
+    const updates = {};
+    if (name      !== undefined) updates.name      = name.trim();
+    if (deviceId  !== undefined) updates.deviceId  = deviceId.trim();
+    if (location  !== undefined) updates.location  = location;
+    if (status    !== undefined) updates.status    = status;
+    if (notes     !== undefined) updates.notes     = notes;
+
+    await db.collection("devices").doc(id).update(updates);
+    const updated = await db.collection("devices").doc(id).get();
+    res.json({ id: updated.id, ...updated.data() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/devices/:id — remove a device (admin only)
+app.delete("/api/admin/devices/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.collection("devices").doc(id).delete();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(5000, "0.0.0.0", () => {
   console.log("Backend running on port 5000");
 });

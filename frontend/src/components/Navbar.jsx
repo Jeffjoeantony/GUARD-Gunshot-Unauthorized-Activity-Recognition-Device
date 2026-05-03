@@ -61,6 +61,15 @@ function Navbar() {
             Alerts
           </li>
 
+          {userRole === 'admin' && (
+            <li
+              className="nav-items"
+              onClick={() => navigate("/admin/devices")}
+            >
+              Devices
+            </li>
+          )}
+
           <li
             className="nav-items"
             onClick={() => navigate("/settings")}

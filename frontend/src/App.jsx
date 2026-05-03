@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Alertlog from "./pages/Alertlog";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
+import AdminDevices from "./pages/AdminDevices";
 import MapPage from "./pages/MapPage";
 import AdminSetupMFA from "./pages/AdminSetupMFA";
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -31,7 +32,7 @@ function App() {
         <Route path="/admin/alerts" element={<Alertlog />} />
         <Route path="/admin/map" element={<MapPage />} />
         <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/devices" element={<div style={{padding:'40px',color:'#fff',fontFamily:'Inter,sans-serif'}}><h2>Device Management</h2><p style={{color:'#888'}}>Coming soon…</p></div>} />
+        <Route path="/admin/devices" element={<AdminDevices />} />
         <Route path="/admin/settings" element={<SettingsPage isAdmin />} />
       </Route>
 

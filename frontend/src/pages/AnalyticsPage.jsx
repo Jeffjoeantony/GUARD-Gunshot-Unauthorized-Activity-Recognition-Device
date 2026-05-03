@@ -205,17 +205,23 @@ const ArcGauge = ({ pct }) => {
 ══════════════════════════════════════════════════════════════ */
 export default function AnalyticsPage() {
   const [alerts,  setAlerts]  = useState([]);
+  const [devices, setDevices] = useState([]);  // registry
   const [loading, setLoading] = useState(true);
   const [range,   setRange]   = useState(7);         // days
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/alerts`);
-      const d = await r.json();
-      setAlerts(Array.isArray(d) ? d : []);
+      const [aRes, dRes] = await Promise.all([
+        fetch(`${API}/alerts`),
+        fetch(`${API}/devices`),
+      ]);
+      const [aData, dData] = await Promise.all([aRes.json(), dRes.json()]);
+      setAlerts(Array.isArray(aData) ? aData : []);
+      setDevices(Array.isArray(dData) ? dData : []);
     } catch {
       setAlerts([]);
+      setDevices([]);
     } finally {
       setLoading(false);
     }
@@ -227,12 +233,12 @@ export default function AnalyticsPage() {
   const cutoff = range === 9999 ? 0 : Date.now() / 1000 - range * 86400;
   const inRange = useMemo(() => alerts.filter(a => a.timestamp >= cutoff), [alerts, range]);
 
-  const daily    = useMemo(() => buildDaily(alerts, range),    [alerts, range]);
-  const hourly   = useMemo(() => buildHourly(alerts, range),   [alerts, range]);
-  const confHist = useMemo(() => buildConfHist(alerts, range), [alerts, range]);
-  const devices  = useMemo(() => buildDevices(alerts, range),  [alerts, range]);
-  const types    = useMemo(() => buildTypes(alerts, range),    [alerts, range]);
-  const spark    = useMemo(() => buildSpark(alerts),           [alerts]);
+  const daily      = useMemo(() => buildDaily(alerts, range),    [alerts, range]);
+  const hourly     = useMemo(() => buildHourly(alerts, range),   [alerts, range]);
+  const confHist   = useMemo(() => buildConfHist(alerts, range), [alerts, range]);
+  const topDevices = useMemo(() => buildDevices(alerts, range),  [alerts, range]);
+  const types      = useMemo(() => buildTypes(alerts, range),    [alerts, range]);
+  const spark      = useMemo(() => buildSpark(alerts),           [alerts]);
 
   const totalInRange  = inRange.length;
   const avgConf       = inRange.length ? inRange.reduce((s, a) => s + (a.confidence || 0), 0) / inRange.length : 0;
@@ -242,9 +248,12 @@ export default function AnalyticsPage() {
   const prevPeriodCut = cutoff - (range === 9999 ? 0 : range * 86400);
   const prevCount     = alerts.filter(a => a.timestamp >= prevPeriodCut && a.timestamp < cutoff).length;
   const delta         = prevCount === 0 ? null : totalInRange - prevCount;
+  
+  const totalRegistered = devices.length;
+  const registeredActive = devices.filter(d => d.status === "online").length;
 
   const maxHour = Math.max(...hourly, 1);
-  const maxDev  = devices[0]?.count || 1;
+  const maxDev  = topDevices[0]?.count || 1;
   const typeTotal = types.reduce((s, t) => s + t.value, 0) || 1;
 
   const recent = [...inRange]
@@ -312,7 +321,7 @@ export default function AnalyticsPage() {
           icon={DevicesOther}
           label="Active Devices"
           value={loading ? "—" : uniqueDevices}
-          sub="Unique sensors"
+          sub={devices.length > 0 ? `${registeredActive} active of ${totalRegistered} registered` : "Unique sensors"}
           accent="#a55eea"
           spark={spark.map((_, i) => i % 3)}
         />
@@ -412,11 +421,11 @@ export default function AnalyticsPage() {
         {/* Device breakdown */}
         <div className="an-panel">
           <div className="an-panel-title"><DevicesOther />Top Devices</div>
-          {loading ? <Skeleton h={160} /> : devices.length === 0 ? (
+          {loading ? <Skeleton h={160} /> : topDevices.length === 0 ? (
             <div className="an-empty">No device data</div>
           ) : (
             <div className="an-device-list">
-              {devices.map((d, i) => (
+              {topDevices.map((d, i) => (
                 <div key={d.name} className="an-device-row">
                   <div className="an-device-name" title={d.name}>{d.name}</div>
                   <div className="an-device-bar-wrap">

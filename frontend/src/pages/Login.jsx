@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
 import EmailIcon from "@mui/icons-material/Email";
 import PersonIcon from "@mui/icons-material/Person";
@@ -86,6 +86,23 @@ const Login = () => {
   const [cooldown, setCooldown]       = useState(false);
 
   const navigate = useNavigate();
+
+  // If user is already authenticated, redirect them away from the login page
+  useEffect(() => {
+    const redirectIfAuthenticated = async () => {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
+      if (!session) return;
+
+      const role = session.user?.user_metadata?.role;
+      if (role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    };
+    redirectIfAuthenticated();
+  }, [navigate]);
 
   const clearError = () => setLoginError(null);
 
