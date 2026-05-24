@@ -1,0 +1,94 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <SPI.h>
+#include <LoRa.h>
+
+// ======================
+const char* ssid="abcdefgh";
+const char* password="12345678";
+
+const char* serverUrl="http://YOUR_SERVER_IP:5000/api/alerts";
+
+// ======================
+#define SCK 18
+#define MISO 19
+#define MOSI 23
+#define SS 5
+#define RST 14
+#define DIO0 26
+
+#define LORA_FREQUENCY 433E6
+
+// ======================
+void connectWiFi(){
+
+  Serial.print("Connecting WiFi");
+
+  WiFi.begin(ssid,password);
+
+  while(WiFi.status()!=WL_CONNECTED){
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWiFi connected");
+}
+
+// ======================
+void sendToServer(String payload){
+
+  if(WiFi.status()!=WL_CONNECTED)
+    return;
+
+  HTTPClient http;
+
+  http.begin(serverUrl);
+  http.addHeader("Content-Type","application/json");
+
+  int code=http.POST(payload);
+
+  Serial.print("Server response: ");
+  Serial.println(code);
+
+  http.end();
+}
+
+// ======================
+void setup(){
+
+  Serial.begin(115200);
+  delay(2000);
+
+  connectWiFi();
+
+  SPI.begin(SCK,MISO,MOSI,SS);
+  LoRa.setPins(SS,RST,DIO0);
+
+  if(!LoRa.begin(LORA_FREQUENCY)){
+    Serial.println("LoRa init failed!");
+    while(1);
+  }
+
+  LoRa.setSyncWord(0x12);
+
+  Serial.println("Receiver ready");
+}
+
+// ======================
+void loop(){
+
+  int packetSize=LoRa.parsePacket();
+
+  if(packetSize){
+
+    String received="";
+
+    while(LoRa.available())
+      received+=(char)LoRa.read();
+
+    Serial.println("Received alert:");
+    Serial.println(received);
+
+    sendToServer(received);
+  }
+}
